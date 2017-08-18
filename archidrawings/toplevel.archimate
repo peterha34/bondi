@@ -3,6 +3,7 @@
   <folder name="Strategy" id="804f5561-0019-4a3e-9bdd-efad19f6a973" type="strategy"/>
   <folder name="Business" id="76718dc9-ecc0-4968-aa7f-9cf719e75090" type="business">
     <element xsi:type="archimate:BusinessActor" name="Test Actor" id="64cddbd8-07f6-4a8d-b793-9f51a898b92b"/>
+    <element xsi:type="archimate:BusinessActor" name="Operator" id="8e2df503-e045-44b9-980e-bbdec1b6baaa"/>
   </folder>
   <folder name="Application" id="62b9a207-578c-42ad-977c-0a8af5ce3770" type="application"/>
   <folder name="Technology &amp; Physical" id="25f10966-f43a-4502-b001-c1c365e7e1ca" type="technology"/>
@@ -13,7 +14,10 @@
   <folder name="Views" id="f4a806f7-d307-48a5-b143-6180b1695417" type="diagrams">
     <element xsi:type="archimate:ArchimateDiagramModel" name="Default View" id="5a45c0d5-8e2f-457c-920f-806dfd111d7c">
       <child xsi:type="archimate:DiagramObject" id="f8c982ff-48d5-40b0-85fb-2546befbdfc7" archimateElement="64cddbd8-07f6-4a8d-b793-9f51a898b92b">
-        <bounds x="134" y="121" width="120" height="55"/>
+        <bounds x="60" y="132" width="120" height="55"/>
+      </child>
+      <child xsi:type="archimate:DiagramObject" id="dcb682f4-9ec4-4a82-a2fc-aa65023d4499" archimateElement="8e2df503-e045-44b9-980e-bbdec1b6baaa">
+        <bounds x="839" y="220" width="120" height="55"/>
       </child>
     </element>
   </folder>
