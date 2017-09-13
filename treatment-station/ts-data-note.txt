@@ -1,0 +1,22 @@
+Treatment Station Data Note
+
+Pi connected to:
+ 
+TI Sensor Tag 1(heat-ts)
+- Data type: JSON String converted to JSON Object.
+- Dat collect: IRTemperature
+
+TI Sensor Tag 2(undulation)
+- Data type: JSON String converted to JSON Object.
+- Data collect: IRTemperature, Accelerometer
+
+// I dont have hardware for alcohol concerntration sensor yet. Will look at it after I get the stuff.
+Unknown (alcohol-concerntration)
+Datatype: Unknown
+Datacollect: Unknown (Either oxygen reading or something)
+
+
+Resources:
+// I followed the tutorial below. The introduction paragraph should explain quite a bit of important stuff.
+// Section 5 or 6 of the tutorial talks about gateway. Which I think is important for us. But I don't have a good idea on how I can use it yet.. Plz send help
+https://developer.ibm.com/recipes/tutorials/connecting-multiple-ti-sensortags-to-iot-platfom-using-a-raspberry-pi-gateway/
