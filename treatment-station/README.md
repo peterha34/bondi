@@ -12,7 +12,7 @@ B0:91:22:F6:A8:86 CC2650 SensorTag (heat-ts)
 
 
 ---------------------------
-The commands below are use in terminal for debugging sensors purposes
+Sensors Debugging - Terminal Commands
 
 // Scan for sensor tags
 
@@ -44,3 +44,11 @@ e.g sudo python sensortagcollector.py -o -d B0:91:22:F6:A8:86=heat-ts 24:71:89:C
 
 sudo python sensortagcollector.py -o -d B0:91:22:F6:A8:86=heat-ts 24:71:89:CC:1E:00=undulation-ts -f IRtemperature accelerometer
 
+---------------------------
+Node-Red Commands
+
+// start node red to debug in node red apps
+node-red-start
+
+// stop node red
+node-red-stop
