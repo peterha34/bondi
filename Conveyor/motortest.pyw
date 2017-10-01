@@ -7,6 +7,7 @@ dir: 1 forwards, 0 backwards
 time: time motor is on in seconds """
 def move(direction, time):
     #Set both pins to 1: output mode
+    wiringpi.wiringPiSetup()
     wiringpi.pinMode(0,1) #GPIO-0 or PiPin-11
     wiringpi.pinMode(1,1) #GPIO-1 or PiPin-12
 
@@ -23,8 +24,6 @@ def move(direction, time):
     wiringpi.pinMode(1,0)
     sleep(2) #So i dont break the motor...again...
     return;
-
-wiringpi.wiringPiSetup()
 
 move(1,5) #Sample use of move function, forwards for 5 seconds
  
