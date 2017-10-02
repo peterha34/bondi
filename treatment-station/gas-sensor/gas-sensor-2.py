@@ -2,8 +2,7 @@ import ModbusServer as server
 from mq import *
 import sys, time
 
-__init__
-#Initialise this function to connect to server
+# initialise this function to connect to server
 server.server_start("192.168.1.4")
 
 # initialise server with register name and coil name
