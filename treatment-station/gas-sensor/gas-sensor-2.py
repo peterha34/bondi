@@ -6,7 +6,7 @@ import sys, time
 server.server_start("192.168.1.4")
 
 # initialise server with register name and coil name
-server.initialise_server(alcohol, doievenfkenneedone)
+server.initialise_server("alcohol", "doievenfkenneedone")
 
 
 try:
@@ -20,7 +20,7 @@ try:
         sys.stdout.write("Alcohol: %g ppm, CO: %g ppm" % (perc["ALCOHOL"], perc["CO"]))
         sys.stdout.flush()
         time.sleep(0.1)
-        server.update_register(alcohol, (perc["ALCOHOL"])) 	# Passing stuff to server
+        server.update_register("alcohol", (perc["ALCOHOL"])) 	# Passing stuff to server
 		
 		
 except:
