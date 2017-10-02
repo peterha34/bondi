@@ -4,7 +4,7 @@ import sys, time
 
 __init__
 #Initialise this function to connect to server
-server.server_start(192.168.1.4)
+server.server_start("192.168.1.4")
 
 # initialise server with register name and coil name
 server.initialise_server(alcohol, doievenfkenneedone)
