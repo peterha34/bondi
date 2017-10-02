@@ -1,0 +1,128 @@
+;
+;			Process Simulation
+;			==================
+;
+;Files named <configuration>.SIM may be used to simulate the behaviour of
+;a process which has been defined by IGSS in the configuration named
+;<configuration>.ELM.
+;
+;If the IGSS system is started via IGSS SIM then a simulator is loaded in
+;stead of the usual communication driver to the process control computer.
+;When the configuration is started the simulator will read entries one
+;by one from this simulation file and simulate that corresponding changes
+;was received from the process.
+;
+;The entries in the file are read cyclically at a speed which is controlled
+;by specifying a delay in each entry. Specifying a delay of zero simulates
+;that more changes are received in one scan of the process values.
+;
+;The format of the simulation file is as follows. Each line in the file
+;represents one entry. The line is in free format. The items must be separated
+;by one or more blanks or tabs. The sequence of the items must be as specified
+;below.
+;
+; Text from a ";" to the end of the line is treated as a comment
+;
+;For all types:  <delay> [increment] <object name>
+;
+;		plus items according to object type:
+;
+;
+;Digital:	<alarm state pattern> <state number>
+;
+;Analog:		<atom number> <value>
+;
+;Counter:	<atom number> <value>
+;
+;Table:		<start index> <value 1> <value 2> ...
+;
+;String:		"value of text string"
+;
+;
+;The syntax objects have the following meaning:
+;
+;<delay>:	The number of seconds to wait before the next entry is
+;		read.
+;
+;[(+/-)Increment]:  Optional increment for analog objects, the atom will
+;       incremented with the constant. If if exceeds the high scale, it will
+;       be set to low scale.
+;       Must be preceeded by + or -.
+;
+;<object name>:	The unique name of the object in question. If there
+;		are blanks in the name then the name must be surrounded
+;		by double quotes (").
+;
+;<Alarm state pattern>:
+;		Alarms state patterns must be specified as decimal numbers
+;		such that the corresponding binary representation of the
+;		number matches the alarm bits that are to be 'on'. A value 
+;		of zero means 'no alarm'. If the alarm bits are configured
+;		as 'single bit' then several alarms can be active concurrently.
+;		Otherwise the alarm corresponding to the binary interpretation
+;		of the alarm bits is 'on'.
+;
+;<state number>:	Digital states defined for the object are numbered from
+;		0, 1, 2, and onwards. Zero is the number of the first
+;		valid state. The ordering of states corresponds to the inter-
+;		pretation of the defined state bit patterns as binary numbers
+;		or as bit number, depending on the usage of the 'single bit'
+;		specifier.
+;
+;<atom number>:	Analog and counter objects consists of several units,
+;		called atoms, which can be mapped independently.
+;
+;		For analog objects the atom numbers are:
+;		0: High alarm limit
+;		1: High warning limit
+;		2: Actual process value
+;		3: Set point value
+;		4: Low warning limit
+;		5: Low alarm limit
+;
+;		For counter objects the atom numbers are:
+;		0: Counter control commands
+;		1: Actual count value
+;		2: Alarm limit
+;		3: Preset count value
+;
+;<value>:	The new value of the defined atom. A decimal point may be
+;		used. The number of decimals used, however, is controlled
+;		by the definition of the object.
+;
+;<start index>:	The index in the table of the first value to be changed.
+;		If more than one value is given then they are used to
+;		change the values immediately following in the table.
+;
+;<value 1> ...:	One or more new values for the table. The remaining values
+;		in the table are left unchanged. 
+;
+;"text string":	The specified text replaces completely the old string
+;		value.
+;
+;
+;The simulator acts to commands in the following way:
+;
+;1. A digital command for an object causes a state change for the object
+;   so that the state number corresponds to the command number.
+;
+;2. Alarm acknowledge requests causes a corresponding alarm acknowledge.
+;
+;All other commands or changes are ignored, except that all changes on both
+;input and output are logged as specified in the configuration.
+;
+;
+; Sample
+;
+; 1 Dig1 0 3
+; Waits 1 second then
+; Sets Dig1 object to state 3
+;
+; 3 Ana1 2 345.5
+; Waits 3 seconds then
+; Sets Ana1 process value to 345.5
+;
+; 0 +2.5 Ana2 2 123
+; Waits zero seconds then
+; increments the Ana2 process value by 2.5, the 123 at the end is just needed for 
+; the syntax to be correct, it is not used.
