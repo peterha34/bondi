@@ -21,7 +21,7 @@ try:
         sys.stdout.write("Alcohol: %g ppm, CO: %g ppm" % (perc["ALCOHOL"], perc["CO"]))
         sys.stdout.flush()
         time.sleep(0.1)
-		server.update_register(alcohol, (perc["ALCOHOL"])) 	# Passing stuff to server
+        server.update_register(alcohol, (perc["ALCOHOL"])) 	# Passing stuff to server
 		
 		
 except:
