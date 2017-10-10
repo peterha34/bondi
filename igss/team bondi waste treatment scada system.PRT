@@ -1,8 +1,8 @@
-Configuration Report                    17/10/10  07:35:53                                                              
-Configuration file:                     C:\Users\bondi\Documents\bondi\igss\DefWork\Team Bondi                          
-                                        Waste Treatment SCADA System.ELM                                                
+Configuration Report                    17/10/10  12:09:42                                                              
+Configuration file:                     F:\Projects\bondi\igss\DefWork\Team Bondi Waste Treatment                       
+                                        SCADA System.ELM                                                                
 System Version:                         12.00.00                                                                        
-Number of objects:                      25                                                                              
+Number of objects:                      23                                                                              
 
 ========================================================================================================================
 Area: Global                                                                                                            
@@ -113,22 +113,6 @@ hey               STRING                -
 Area:                                                                                                                   
 
 ========================================================================================================================
-Area: Global                                                                                                            
-------------------------------------------------------------------------------------------------------------------------
-password          STRING                -                                                                               
-
-========================================================================================================================
-Area:                                                                                                                   
-
-========================================================================================================================
-Area: Global                                                                                                            
-------------------------------------------------------------------------------------------------------------------------
-username          STRING                -                                                                               
-
-========================================================================================================================
-Area:                                                                                                                   
-
-========================================================================================================================
 Area: Test Area                                                                                                         
 
 ========================================================================================================================
@@ -227,12 +211,10 @@ Scan class
 ________________________________________________________________________________________________________________________
 Scan class        Driver name          Node number     Data group     Word           Length                             
 ------------------------------------------------------------------------------------------------------------------------
-1: Manual         7TMODTCP (Waste      0               2              0              20                                 
-                  Treatment)                                                                                            
+1: Manual         -                    -               -              -              -                                  
                   7TMODTCP (Waste      0               6              0              20                                 
                   Treatment)                                                                                            
-2:   2.000 sec.   -                    -               -              -              -                                  
-                  7TMODTCP (Waste      0               3              0              1                                  
+2:   2.000 sec.   7TMODTCP (Waste      0               3              0              1                                  
                   Treatment)                                                                                            
 3:   5.000 sec.   -                    -               -              -              -                                  
 4:  10.000 sec.   -                    -               -              -              -                                  
@@ -241,13 +223,13 @@ Scan class        Driver name          Node number     Data group     Word      
 ========================================================================================================================
 Communication efficiency in scan records                                                                                
 ------------------------------------------------------------------------------------------------------------------------
-Number of bits used for objects                                       976                                               
-Total number of bits in scanrecords                                   656                                               
-Efficiency                                                            149%                                              
-Total number of words in scanrecords                                  41                                                
-Possible number of words with same number of scan records             375                                               
-Efficiency                                                            11%                                               
-Number of scan records:3                                                                                                
+Number of bits used for objects                                       336                                               
+Total number of bits in scanrecords                                   336                                               
+Efficiency                                                            100%                                              
+Total number of words in scanrecords                                  21                                                
+Possible number of words with same number of scan records             250                                               
+Efficiency                                                            8%                                                
+Number of scan records:2                                                                                                
 
 ========================================================================================================================
 Driver configuration                                                                                                    
