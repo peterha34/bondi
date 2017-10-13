@@ -11,6 +11,8 @@ def move(direction, time):
     wiringpi.pinMode(0,1) #GPIO-0 or PiPin-11
     wiringpi.pinMode(1,1) #GPIO-1 or PiPin-12
 
+    sleep(3) #So i dont break the motor...again...
+    
     #Set pinout high(1) to control forward or reverse 
     if (direction):
         wiringpi.digitalWrite(0,1)
@@ -22,7 +24,6 @@ def move(direction, time):
     #Then reset the pins for another day
     wiringpi.pinMode(0,0)
     wiringpi.pinMode(1,0)
-    sleep(2) #So i dont break the motor...again...
     return;
 
 move(1,5) #Sample use of move function, forwards for 5 seconds
