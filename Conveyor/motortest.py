@@ -12,12 +12,13 @@ def move(direction, time):
         wiringpi.pinMode(0,1) #GPIO0 PiPin11
         wiringpi.pinMode(1,1) #GPIO1 PiPin12
 
-        sleep(1) #So i dont break the motor
+        sleep(0.5) #So i dont break the motor
 
         if (direction):
             wiringpi.digitalWrite(0,1)
         else:
             wiringpi.digitalWrite(1,1)
+            
         sleep(time) #time to leave motor running
         wiringpi.digitalWrite(0,0)
         wiringpi.digitalWrite(1,0)
@@ -32,9 +33,8 @@ def move(direction, time):
     return;
 
 def stop():
-        wiringpi.digitalWrite(0,0)
-        wiringpi.digitalWrite(1,0)
-        wiringpi.pinMode(0,0)
-        wiringpi.pinMode(1,0)
+    wiringpi.digitalWrite(0,0)
+    wiringpi.digitalWrite(1,0)
+    wiringpi.pinMode(0,0)
+    wiringpi.pinMode(1,0)
     return;
-
