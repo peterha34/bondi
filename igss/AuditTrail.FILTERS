@@ -1,0 +1,11 @@
+<SOAP-ENV:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:SOAP-ENC="http://schemas.xmlsoap.org/soap/encoding/" xmlns:SOAP-ENV="http://schemas.xmlsoap.org/soap/envelope/" xmlns:clr="http://schemas.microsoft.com/soap/encoding/clr/1.0" SOAP-ENV:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+<SOAP-ENV:Body>
+<a1:AuditTrailFilterList id="ref-1" xmlns:a1="http://schemas.microsoft.com/clr/nsassem/IGSS/IGSSControls%2C%20Version%3D12.0.0.16089%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Dnull">
+<List_x0060_1_x002B__items href="#ref-3"/>
+<List_x0060_1_x002B__size>0</List_x0060_1_x002B__size>
+<List_x0060_1_x002B__version>0</List_x0060_1_x002B__version>
+</a1:AuditTrailFilterList>
+<SOAP-ENC:Array id="ref-3" SOAP-ENC:arrayType="a1:AuditTrailFilter[0]" xmlns:a1="http://schemas.microsoft.com/clr/nsassem/IGSS/IGSSControls%2C%20Version%3D12.0.0.16089%2C%20Culture%3Dneutral%2C%20PublicKeyToken%3Dnull">
+</SOAP-ENC:Array>
+</SOAP-ENV:Body>
+</SOAP-ENV:Envelope>
