@@ -24,7 +24,7 @@ sudo python sensortagcollector.py
 
 // run with specific name of sensor-tag
 
-sudo python sensortagcollector.py -d uid=friendlyname
+sudo python sensortagcollector.py -d uid=friendl  yname
 
 e.g sudo python sensortagcollector.py -d B0:91:22:F6:A8:86=heat-ts
 
@@ -52,3 +52,8 @@ node-red-start
 
 // stop node red
 node-red-stop
+
+------------------------
+Debug note
+// Restart bluetooh
+service bluetooth restart
