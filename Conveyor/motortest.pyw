@@ -31,6 +31,10 @@ def move(direction, time):
         wiringpi.pinMode(1,0)
     return;
 
-move(1,1)
-
+def stop():
+        wiringpi.digitalWrite(0,0)
+        wiringpi.digitalWrite(1,0)
+        wiringpi.pinMode(0,0)
+        wiringpi.pinMode(1,0)
+    return;
 
