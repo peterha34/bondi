@@ -1,4 +1,4 @@
-Configuration Report                    17/10/18  03:56:29                                                              
+Configuration Report                    17/10/18  10:10:11                                                              
 Configuration file:                     C:\Users\TEAMBONDI\Documents\bondi\igss\Team Bondi Waste                        
                                         Treatment SCADA System.ELM                                                      
 System Version:                         12.00.00                                                                        
@@ -143,6 +143,24 @@ Area:
 Area: Test Area                                                                                                         
 ------------------------------------------------------------------------------------------------------------------------
 TempReading       ANALOG                A Termperature Reading                                                          
+                                                            100                                                         
+
+                                                            -                                                           
+                                                            100                                                         
+
+                                                            -                                                           
+                                                            85                                                          
+
+                                                            -                                                           
+                                                            50                                                          
+
+                                                            -                                                           
+                                                            10                                                          
+
+                                                            -                                                           
+                                                            10                                                          
+
+                                                            -                                                           
 
 ========================================================================================================================
 Area:                                                                                                                   
@@ -151,6 +169,9 @@ Area:
 Area: Test Area                                                                                                         
 ------------------------------------------------------------------------------------------------------------------------
 TempReading2      ANALOG                A Termperature Reading                                                          
+                                                            33                                                          
+
+                                                            -                                                           
 
 ========================================================================================================================
 Area:                                                                                                                   
@@ -218,6 +239,7 @@ Alarm number      Priority   Title                                              
  98               3          Event                                              -                             -         
  99               3          Undefined alarm received                           -                             -         
 100               1          Last predefined alarm text                         -                             -         
+101               5          ghg                                                -                             -         
 
 ========================================================================================================================
 Base class                                                                                                              
