@@ -265,7 +265,7 @@ class ScanDelegate(bluepy.btle.DefaultDelegate):
             if args.info:
                 print "dev=",dev
             dev.unpair()
-
+burp
     
 # specify commandline options       
 parser = argparse.ArgumentParser()
