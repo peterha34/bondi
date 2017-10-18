@@ -1,6 +1,5 @@
-# to run with server
-python sensor-modbus-server
-
+# to run with thread server thingo
+python sensor-modbus-threads.py
 
 # 
 # To kill shits
