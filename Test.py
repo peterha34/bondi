@@ -6,14 +6,14 @@ import time
 import socket
 
 imageCommand = "GET_IMAGE"
-ip = 192.168.1.2
-port = 8080
+ip = "192.168.1.2"
+port = "8080"
+serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 serversocket.listen(1)
 while True:
     connection, address = serversocket.accept()
     buf = connection.recv(64)
-    if buf == imageCommand
-        serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    if buf == imageCommand:
         serverSocket.bind((ip,port))
         subprocess.call("raspistill -n -w %s -h %s -t 1000 -o Normal.png" % (640, 480), shell=True) #Camera module takes a picture after 5 second
         img = Image("Normal.png") # Loads the image on the img variable
