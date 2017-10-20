@@ -90,14 +90,14 @@ class Robot:
         msg += "#" 
         return self.send(msg)
 		
-	    def set_suction(self):
+    def set_suction(self):
         '''
         Executes activation of suction tool
         '''
         msg = "95 #"
         return self.send(msg)
 		
-	    def reset_suction(self):
+    def reset_suction(self):
         '''
         Cancels execution of suction tool 
         '''
