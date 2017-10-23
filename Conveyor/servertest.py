@@ -20,8 +20,8 @@ def start_thread_stop():
 
     while True:
         print("loopin stop thread\n")
-        connection, address = serversocket1.accept()
-        buf = connection1.recv(64)
+        connection, address = serversocket.accept()
+        buf = connection.recv(64)
         if buf == STOP_COMMAND:
             print STOP_COMMAND
             conveyor.stop()
@@ -41,19 +41,19 @@ def start_thread_main():
         buf = connection.recv(64)
         if buf == LEFT_COMMAND:
             print LEFT_COMMAND
-            conveyor.move(0,3)
+            conveyor.move(0,3.5)
             CONVEYOR_RETURNS = "Left move success"
         elif buf == RIGHT_COMMAND:
             print RIGHT_COMMAND
-            conveyor.move(1,3)
+            conveyor.move(1,3.5)
             CONVEYOR_RETURNS = "Right move success"
         else:
             print "Invalid command"
             CONVEYOR_RETURNS = "Invalid command"
             
-        clientsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        clientsocket.connect((robotIP, robotPort))
-        clientsocket.send(CONVEYOR_RETURNS)
+        #clientsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        #clientsocket.connect((robotIP, robotPort))
+        #clientsocket.send("CONVEYOR_DATA:" + CONVEYOR_RETURNS)
         time.sleep(0.5)
         
 

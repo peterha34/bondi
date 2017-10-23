@@ -25,10 +25,6 @@ from twisted.internet.task import LoopingCall
 #---------------------------------------------------------------------------# 
 # configure the service logging
 #---------------------------------------------------------------------------# 
-import logging
-logging.basicConfig()
-log = logging.getLogger()
-log.setLevel(logging.DEBUG)
 
 #---------------------------------------------------------------------------# 
 # define your callback process
@@ -36,36 +32,15 @@ log.setLevel(logging.DEBUG)
 # thread if necessary.
 #---------------------------------------------------------------------------# 
 def updating_writer(a):
-    log.debug("updating the context")
     context  = a[0]
-# register 3 is a modbus specific register for written data vals, represented
-# in IGSS as the 3/16 Register option on a diagram object.
-# Pretty sure each register is 16 bit.
-    register = 3
-# Slave ID is used as a context identifier, to show which slave table is
-# being used, currently addressing the first slave
-    slave_id = 0x00
-# Address offset value - used to determine where in the register ths data is
-# stored
-    address  = 0x00
-# retrieves values from the context table, with count = the number of vals
-    values   = context[slave_id].getValues(register, address, count=1)
-# increments all vals (incase count > 1)
-    values   = [v + 1 for v in values]
-    log.debug("new values: " + str(values))
-# Writes vals to context table.
-    context[slave_id].setValues(register, address, values)
+    print("Checking context: " + str(context[0].getValues(1, 0)))
 
 #---------------------------------------------------------------------------# 
 # initialize your data store
 #---------------------------------------------------------------------------# 
 # A sequential datablock basically expects data in every slot of the block
 # A sparse DataBlock allows you to lease slots empty
-store = ModbusSlaveContext(
-    di = ModbusSequentialDataBlock(0, [17]*100),
-    co = ModbusSequentialDataBlock(0, [17]*100),
-    hr = ModbusSequentialDataBlock(0, [17]*100),
-    ir = ModbusSequentialDataBlock(0, [17]*100))
+store = ModbusSlaveContext()
 context = ModbusServerContext(slaves=store, single=True)
 
 #---------------------------------------------------------------------------# 
@@ -86,5 +61,5 @@ time = 5 # 5 seconds delay
 loop = LoopingCall(f=updating_writer, a=(context,))
 loop.start(time, now=False) # initially delay by time
 # This is the IP of my rasp pi
-piAddress = "192.168.1.4"
+piAddress = "192.168.1.3"
 StartTcpServer(context, identity=identity, address=(piAddress, 5020))

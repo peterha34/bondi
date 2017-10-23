@@ -45,6 +45,3 @@ def stop():
     wiringpi.pinMode(0,0)
     wiringpi.pinMode(1,0)
     return;
-
-move(1,3)
-move(0,3)
