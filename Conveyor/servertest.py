@@ -4,37 +4,57 @@ from threading import Thread
 import motortest as conveyor
 
 myIP = '192.168.1.3'
+movePort = 8091
+stopPort = 8090
+robotIP = '192.168.1.14'
+robotPort = 8080
+LEFT_COMMAND = "LEFT"
+RIGHT_COMMAND = "RIGHT"
+STOP_COMMAND = "STOP"
+RETURN_MSG = ""
 
-def stopmytits():
-    port = 8090
-    serversocket1 = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    serversocket1.bind((myIP, port))
-    serversocket1.listen(1) # become a server socket, maximum 5 connections
+def start_thread_stop():
+    serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    serversocket.bind((myIP, stopPort))
+    serversocket.listen(1) # become a server socket, maximum 5 connections
+
     while True:
-        print("loopin thread2\n")
-        connection1, address1 = serversocket1.accept()
-        buf1 = connection1.recv(64)
-        if buf1 == "stop":
-            print "stop"
+        print("loopin stop thread\n")
+        connection, address = serversocket1.accept()
+        buf = connection1.recv(64)
+        if buf == STOP_COMMAND:
+            print STOP_COMMAND
             conveyor.stop()
         time.sleep(0.5)
 
-Thread(target=stopmytits,args=()).start()
-port = 8091
-serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-serversocket.bind((myIP, port))
-serversocket.listen(1) # become a server socket, maximum 5 connections
+def start_thread_main():
+    # Also start stop thread listening for emergency stop
+    Thread(target=start_thread_stop,args=()).start()
+    
+    serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    serversocket.bind((myIP, movePort))
+    serversocket.listen(1) # become a server socket, maximum 5 connections
 
-while True:
-    print("loopin")
-    connection, address = serversocket.accept()
-    buf = connection.recv(64)
-    if buf == "left":
-        print "left"
-        conveyor.move(0,10)
-    elif buf == "right":
-        print "right"
-        conveyor.move(1,10)
-    else:
-        print "This is my last resport"
-    time.sleep(0.5)
+    while True:
+        print("loopin main thread")
+        connection, address = serversocket.accept()
+        buf = connection.recv(64)
+        if buf == LEFT_COMMAND:
+            print LEFT_COMMAND
+            conveyor.move(0,3)
+            CONVEYOR_RETURNS = "Left move success"
+        elif buf == RIGHT_COMMAND:
+            print RIGHT_COMMAND
+            conveyor.move(1,3)
+            CONVEYOR_RETURNS = "Right move success"
+        else:
+            print "Invalid command"
+            CONVEYOR_RETURNS = "Invalid command"
+            
+        clientsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        clientsocket.connect((robotIP, robotPort))
+        clientsocket.send(CONVEYOR_RETURNS)
+        time.sleep(0.5)
+        
+
+start_thread_main()
