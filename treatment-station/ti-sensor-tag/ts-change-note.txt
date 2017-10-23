@@ -1,0 +1,11 @@
+/*
+** Keep bluetooth alive
+*/
+//Install the bluez-tools package 
+sudo apt-get install bluez-tools
+// Open the rc.local file
+sudo nano /etc/rc.local
+//Insert this command before the "exit 0" statement 
+bt-audio -c MAC ID
+//Restart your Raspberry Pi
+sudo reboot
