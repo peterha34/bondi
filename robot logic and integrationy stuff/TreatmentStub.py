@@ -160,11 +160,7 @@ def initialise_server(regnames, coilnames):
     # DEV NOTE: tried only initialising certain block, at differing length to try save space and initialisation time
     #   result was errors being thrown, assuming due to fucked up address space - didn't dig into it, will just use
     #   these settings, no point in doing a RCA.
-    store = ModbusSlaveContext(
-        di=ModbusSequentialDataBlock(0, [17] * 100),
-        co=ModbusSequentialDataBlock(0, [17] * 100),
-        hr=ModbusSequentialDataBlock(0, [17] * 100),
-        ir=ModbusSequentialDataBlock(0, [17] * 100))
+    store = ModbusSlaveContext()
 
     global context
     # single is flagged, meaning only a single context will be created here
@@ -201,6 +197,13 @@ def server_start(piAddress):
 
         #Thread(target=pol_sensors, args=(TREAT3, register_queue, context)).start()
         Thread(target=treatment_servs, args=(TREAT3, context, piAddress)).start()
-        StartTcpServer(context, identity=identity, address=(piAddress, 5020))
+        StartTcpServer(context, identity=identity, address=(piAddress, 5021))
     else:
-    print('Please Initialise the server before trying to start')
+    	print('Please Initialise the server before trying to start')
+
+
+registerList = [""]
+coilList = ["T1","T2","T3"]
+initialise_server(registerList, coilList)
+server_start("192.168.1.2")
+

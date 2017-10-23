@@ -11,11 +11,11 @@ from SimpleCV import Color,Image, DrawingLayer, Camera # Imports specific module
 import time
 import socket
 
-ROBOT_IP = "192.168.1.18"
+ROBOT_IP = "192.168.1.2"
 IMAGE_COMMAND = "GET_IMAGE"
-IP = "192.168.1.18"
-SERVER_PORT = "8081"
-CLIENT_PORT = "8091"
+IP = "192.168.1.2"
+SERVER_PORT = 8081
+CLIENT_PORT = 8091
 
 serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 serversocket.bind((IP, SERVER_PORT))
@@ -28,3 +28,4 @@ while True:
         clientsocket.connect((ROBOT_IP, CLIENT_PORT))
         clientsocket.send("VISION_DATA:1,2,3,1,2,3,1,2")
         time.sleep(1)
+        clientsocket.close()

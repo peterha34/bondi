@@ -496,4 +496,4 @@ coilList = ["R1S1", "R1S2", "R1S3", "R1S4", "R1S5", "R1S6", "R1S7", "R1S8", "R1S
             "R2S3", "R2S4", "R2S5", "R2S6", "R2S7", "R2S8", "R2S9", "R2S10"]
 registerList = [""]
 initialise_server(sensorList, coilList)
-server_start("192.168.1.4")
+server_start("192.168.1.2")

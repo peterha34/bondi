@@ -29,6 +29,7 @@ while True:
     elif buff == STOP_COMMAND:
         print("Stopping")
     clientsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    clientsocket.connect(('192.168.1.18', 8080))
+    clientsocket.connect(('192.168.1.4', 8080))
     clientsocket.send(CONVEYOR_RETURNS + "," + return_message)
     time.sleep(0.5)
+    clientsocket.close()
