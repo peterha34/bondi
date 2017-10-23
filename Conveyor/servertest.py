@@ -6,7 +6,7 @@ import motortest as conveyor
 myIP = '192.168.1.3'
 movePort = 8091
 stopPort = 8090
-robotIP = '192.168.1.14'
+robotIP = '192.168.1.5'
 robotPort = 8080
 LEFT_COMMAND = "LEFT"
 RIGHT_COMMAND = "RIGHT"
