@@ -18,6 +18,9 @@ Sensors Debugging - Terminal Commands
 
 sudo hcitool lescan
 
+// Check for specific device connnection
+sudo hcitool lecc B0:91:22:F6:A8:86
+
 /* 
 ** The section below provides different method to the sensor tag 
 ** The sensors available are: accelerometer, barometer, 
