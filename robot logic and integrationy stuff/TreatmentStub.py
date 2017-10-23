@@ -13,7 +13,7 @@ from pymodbus.datastore import ModbusSequentialDataBlock
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
 from pymodbus.transaction import ModbusRtuFramer, ModbusAsciiFramer
 from threading import Thread
-from queue import Queue
+from Queue import Queue
 import time
 import socket
 

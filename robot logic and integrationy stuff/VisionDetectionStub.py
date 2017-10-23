@@ -15,7 +15,7 @@ ROBOT_IP = "192.168.1.2"
 IMAGE_COMMAND = "GET_IMAGE"
 IP = "192.168.1.2"
 SERVER_PORT = 8081
-CLIENT_PORT = 8091
+CLIENT_PORT = 8080
 
 serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 serversocket.bind((IP, SERVER_PORT))
