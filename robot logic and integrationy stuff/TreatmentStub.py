@@ -59,23 +59,27 @@ def treatment_servs(treatment, context, ip):
     startCommand = ""
     coilname = ""
     port = ""
-    sleepTime = "";
+    sleepTime = ""
+    unload = ""
 
     if treatment == TREAT1:
         startCommand = "START T1"
         coilname = coil_names[0]
         port = 8082
         sleepTime = 30
+        unload = "UNLOAD_T1"
     elif treatment == TREAT2:
         startCommand = "START T2"
         coilname = coil_names[1]
         port = 8083
         sleepTime = 50
+        unload = "UNLOAD_T2"
     elif treatment == TREAT3:
         startCommand = "START T3"
         coilname = coil_names[2]
         port = 8084
         sleepTime = 60
+        unload = "UNLOAD_T3"
     serversocket.bind((ip, port))
     serversocket.listen(1)  # become a server socket, maximum 5 connections
 
@@ -83,9 +87,14 @@ def treatment_servs(treatment, context, ip):
         connection, address = serversocket.accept()
         buf = connection.recv(64)
         if buf == startCommand:
-            update_coil(coilname, 1, context)
+            update_coil(coilname, [1], context)
             time.sleep(sleepTime)
-            update_coil(coilname, 0, context)
+            update_coil(coilname, [0], context)
+            clientsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            clientsocket.connect(("192.168.1.18", 8080))
+            clientsocket.send("TREATMENT_DATA:"+unload)
+            time.sleep(1)
+            clientsocket.close()
 
 
 # ---------------------------------------------------------------------------#
@@ -197,7 +206,7 @@ def server_start(piAddress):
 
         #Thread(target=pol_sensors, args=(TREAT3, register_queue, context)).start()
         Thread(target=treatment_servs, args=(TREAT3, context, piAddress)).start()
-        StartTcpServer(context, identity=identity, address=(piAddress, 5021))
+        StartTcpServer(context, identity=identity, address=(piAddress, 5020))
     else:
     	print('Please Initialise the server before trying to start')
 
@@ -205,5 +214,5 @@ def server_start(piAddress):
 registerList = [""]
 coilList = ["T1","T2","T3"]
 initialise_server(registerList, coilList)
-server_start("192.168.1.2")
+server_start("192.168.1.18")
 

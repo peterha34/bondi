@@ -1,7 +1,7 @@
 import socket
 import time
 
-conveyor = '192.168.1.2'
+conveyor = '192.168.1.18'
 port = 8090
 
 LEFT_COMMAND = "LEFT"
@@ -29,7 +29,7 @@ while True:
     elif buff == STOP_COMMAND:
         print("Stopping")
     clientsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    clientsocket.connect(('192.168.1.2', 8080))
-    clientsocket.send(CONVEYOR_RETURNS + "," + return_message)
+    clientsocket.connect(('192.168.1.18', 8080))
+    clientsocket.send(CONVEYOR_RETURNS + ":" + return_message)
     time.sleep(0.5)
     clientsocket.close()

@@ -11,7 +11,7 @@ from SimpleCV import Color,Image, DrawingLayer, Camera # Imports specific module
 import time
 import socket
 
-ROBOT_IP = "192.168.1.2"
+ROBOT_IP = "192.168.1.18"
 IMAGE_COMMAND = "GET_IMAGE"
 IP = "192.168.1.2"
 SERVER_PORT = 8081

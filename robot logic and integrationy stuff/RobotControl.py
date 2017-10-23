@@ -56,16 +56,17 @@ def socket_broker( pi_address, vision_queue, conveyor_queue, treatment_queue, lo
     while True:
         connection, address = serversocket.accept()
         buff = connection.recv(64)
+        print("getting socket data: " + buff)
         dataList = buff.split(":")
         if dataList[0] == CONVEYOR_RETURNS:
             conveyor_queue.put(dataList[1])
             print("conveyor")
         elif dataList[0] == ROBOT_RETURNS_LOAD:
             load_robot_queue.put(dataList[1])
-            print("robot")
+            print("robot 1")
         elif dataList[0] == ROBOT_RETURNS_STACK:
             stash_robot_queue.put(dataList[1])
-            print("robot")
+            print("robot 2")
         elif dataList[0] == VISION_RETURNS:
             vision_queue.put(dataList[1])
             print("vision")
@@ -78,6 +79,7 @@ def socket_broker( pi_address, vision_queue, conveyor_queue, treatment_queue, lo
 
 
 def get_tray_initial( context ):
+    print("getting tray initial")
     update_coil(context, "R1S1", [0])
     update_coil(context, "R1S2", [1])
     time.sleep(10)
@@ -87,12 +89,13 @@ def get_tray_initial( context ):
 
 def get_vision_results():
     clientsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    clientsocket.connect(('192.168.1.2', 8081))
+    clientsocket.connect(('192.168.1.18', 8081))
     clientsocket.send("GET_IMAGE")
     clientsocket.close()
 
 
 def disc_to_t1( context, slot ):
+    print("disc_to_t1")
     update_coil(context, "R1S1", [0])
     update_coil(context, "R1S3", [1])
     time.sleep(10)
@@ -101,6 +104,7 @@ def disc_to_t1( context, slot ):
 
 
 def disc_to_t2( context, slot ):
+    print("disc_to_t2")
     update_coil(context, "R1S1", [0])
     update_coil(context, "R1S4", [1])
     time.sleep(10)
@@ -109,6 +113,7 @@ def disc_to_t2( context, slot ):
 
 
 def disc_to_t3( context, slot ):
+    print("disc_to_t3")
     update_coil(context, "R1S1", [0])
     update_coil(context, "R1S5", [1])
     time.sleep(10)
@@ -125,6 +130,7 @@ def disc_to_quarantine( context, slot ):
 
 
 def return_unsorted_tray(context):
+    print("returning unsorted")
     update_coil(context, "R1S1", [0])
     update_coil(context, "R1S7", [1])
     time.sleep(10)
@@ -133,6 +139,7 @@ def return_unsorted_tray(context):
 
 
 def control_conveyor( command):
+    print("sliding dat conveyor: " + command)
     clientsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     clientsocket.connect(('192.168.1.18', 8090))
     clientsocket.send(command)
@@ -200,10 +207,73 @@ def unload_failed_treatment(context, disc_count):
     update_coil(context, "R1S11", [0])
 
 
-def loader_State_Machine( context, visionQueue, conveyorQueue, treatmentQueue, loadrobotQueue, stackrobotqueue):
+
+def get_tray_1(context):
+    print("grabbing tray 1")
+    update_coil(context, "R2S1", [0])
+    update_coil(context, "R2S2", [1])
+    time.sleep(10)
+    update_coil(context, "R2S1", [1])
+    update_coil(context, "R2S2", [0])
+
+
+def get_tray_2(context):
+    print("grabbing tray 2")
+    update_coil(context, "R2S1", [0])
+    update_coil(context, "R2S3", [1])
+    time.sleep(10)
+    update_coil(context, "R2S1", [1])
+    update_coil(context, "R2S3", [0])
+
+
+def get_tray_3(context):
+    print("grabbing tray 3")
+    update_coil(context, "R2S1", [0])
+    update_coil(context, "R2S4", [1])
+    time.sleep(10)
+    update_coil(context, "R2S1", [1])
+    update_coil(context, "R2S4", [0])
+
+def stash_tray_1(context):
+    print("stowing tray 1")
+    update_coil(context, "R2S1", [0])
+    update_coil(context, "R2S5", [1])
+    time.sleep(10)
+    update_coil(context, "R2S1", [1])
+    update_coil(context, "R2S5", [0])
+
+def stash_tray_2(context):
+    print("stowing tray 2")
+    update_coil(context, "R2S1", [0])
+    update_coil(context, "R2S6", [1])
+    time.sleep(10)
+    update_coil(context, "R2S1", [1])
+    update_coil(context, "R2S6", [0])
+
+
+def stash_tray_3(context):
+    print("stowing tray 3")
+    update_coil(context, "R2S1", [0])
+    update_coil(context, "R2S7", [1])
+    time.sleep(10)
+    update_coil(context, "R2S1", [1])
+    update_coil(context, "R2S7", [0])
+
+
+def stash_tray_f(context):
+    update_coil(context, "R2S1", [0])
+    update_coil(context, "R2S8", [1])
+    time.sleep(10)
+    update_coil(context, "R2S1", [1])
+    update_coil(context, "R2S8", [0])
+
+
+def loader_State_Machine(context, visionQueue, conveyorQueue, treatmentQueue, loader_robot_queue, stackrobotqueue):
+    time.sleep(10)
+    print("Setting intial state R1")
     update_coil(context, "R1S1", [1])
+    time.sleep(10)
     get_tray_initial(context)
-    loadrobotQueue.get()
     get_vision_results()
     results = visionQueue.get()
     print("Checking that visionQueue shit: " + str(results))
@@ -228,25 +298,29 @@ def loader_State_Machine( context, visionQueue, conveyorQueue, treatmentQueue, l
     stackrobotqueue.put(GET_T1)
     treatment_count = 0
     if len(t1) > 0:
-        start_treatment_1(context)
+        start_treatment_1()
         treatment_count += 1
     if len(t2) > 0:
-        start_treatment_2(context)
+        start_treatment_2()
         treatment_count += 1
     if len(t3) > 0:
-        start_treatment_3(context)
+        start_treatment_3()
         treatment_count += 1
+
     for x in range(0, treatment_count):
-        unload = loadrobotQueue.get()
+        unload = treatmentQueue.get()
         if unload == UNLOAD_T1:
+            loader_robot_queue.get()
             unload_treatment_1(context, len(t1))
             control_conveyor(RIGHT_COMMAND)
             stackrobotqueue.put("T1_COMPLETE")
         elif unload == UNLOAD_T2:
+            loader_robot_queue.get()
             unload_treatment_2(context, len(t2))
             control_conveyor(RIGHT_COMMAND)
             stackrobotqueue.put("T2_COMPLETE")
         elif unload == UNLOAD_T3:
+            loader_robot_queue.get()
             unload_treatment_3(context, len(t3))
             control_conveyor(RIGHT_COMMAND)
             stackrobotqueue.put("T3_COMPLETE")
@@ -258,91 +332,42 @@ def loader_State_Machine( context, visionQueue, conveyorQueue, treatmentQueue, l
             print("What is happening in the unload phase guys???")
 
 
-def get_tray_1(context):
-    update_coil(context, "R2S1", [0])
-    update_coil(context, "R2S2", [1])
-    time.sleep(10)
-    update_coil(context, "R2S1", [1])
-    update_coil(context, "R2S2", [0])
-
-
-def get_tray_2(context):
-    update_coil(context, "R2S1", [0])
-    update_coil(context, "R2S3", [1])
-    time.sleep(10)
-    update_coil(context, "R2S1", [1])
-    update_coil(context, "R2S3", [0])
-
-
-def get_tray_3(context):
-    update_coil(context, "R2S1", [0])
-    update_coil(context, "R2S3," [1])
-    time.sleep(10)
-    update_coil(context, "R2S1", [1])
-    update_coil(context, "R2S3", [0])
-
-def stash_tray_1(context):
-    update_coil(context, "R2S1", [0])
-    update_coil(context, "R2S", [1])
-    time.sleep(10)
-    update_coil(context, "R2S1", [1])
-    update_coil(context, "R2S3", [0])
-
-def stash_tray_2(context):
-    update_coil(context, "R2S1", [0])
-    update_coil(context, "R2S6", [1])
-    time.sleep(10)
-    update_coil(context, "R2S1", [1])
-    update_coil(context, "R2S6", [0])
-
-
-def stash_tray_3(context):
-    update_coil(context, "R2S1", [0])
-    update_coil(context, "R2S7", [1])
-    time.sleep(10)
-    update_coil(context, "R2S1", [1])
-    update_coil(context, "R2S7", [0])
-
-
-def stash_tray_f(context):
-    update_coil(context, "R2S1", [0])
-    update_coil(context, "R2S8", [1])
-    time.sleep(10)
-    update_coil(context, "R2S1", [1])
-    update_coil(context, "R2S8", [0])
-
     # move arm out of way of vision detection
     # request vision detection
     #
 def stacker_State_Machine( context, stack_robot_queue, loader_robot_queue, conveyor_queue):
+    time.sleep(10)
+    print("Setting intial state R2")
     update_coil(context, "R2S1", [1])
     stack_robot_queue.get()
-    get_tray_1()
+    get_tray_1(context)
     control_conveyor(LEFT_COMMAND)
     conveyor_queue.get()
     loader_robot_queue.put(UNLOAD_T1)
     conveyor_queue.get()
     if stack_robot_queue.get() == "T1_COMPLETE":
-        stash_tray_1()
+        stash_tray_1(context)
     else:
         print("Just what the hell kinda stash order is this? Tray 1 goes here")
     # This is grossly copy pasted TODO make this nice if i get the time
-    get_tray_2()
+
+    get_tray_2(context)
     control_conveyor(LEFT_COMMAND)
     conveyor_queue.get()
     loader_robot_queue.put(UNLOAD_T2)
     conveyor_queue.get()
     if stack_robot_queue.get() == "T2_COMPLETE":
-        stash_tray_2()
+        stash_tray_2(context)
     else:
         print("Just what the hell kinda stash order is this? Tray 2 goes here")
     # This is grossly copy pasted TODO make this nice if i get the time
+
     get_tray_3(context)
     control_conveyor(LEFT_COMMAND)
     conveyor_queue.get()
     loader_robot_queue.put(UNLOAD_T3)
     conveyor_queue.get()
-    if stack_robot_queue.get() == "T2_COMPLETE":
+    if stack_robot_queue.get() == "T3_COMPLETE":
         stash_tray_3(context)
     else:
         print("Just what the hell kinda stash order is this? Tray 2 goes here")
@@ -445,11 +470,11 @@ def server_start(pi_address):
         conveyor_queue = Queue()
         treatment_queue = Queue()
         load_robot_queue = Queue()
-	stack_robot_queue = Queue()
-	Thread(target=socket_broker, args=(pi_address, vision_queue, conveyor_queue, treatment_queue, load_robot_queue, stack_robot_queue)).start()
-	Thread(target=loader_State_Machine, args=(context, vision_queue, conveyor_queue, treatment_queue, load_robot_queue, stack_robot_queue)).start()
-	Thread(target=stacker_State_Machine, args=(context, stack_robot_queue, load_robot_queue, conveyor_queue)).start()
-        StartTcpServer(context, identity890=identity, address=(pi_address, 5020))
+        stack_robot_queue = Queue()
+        Thread(target=socket_broker, args=(pi_address, vision_queue, conveyor_queue, treatment_queue, load_robot_queue, stack_robot_queue)).start()
+        Thread(target=loader_State_Machine, args=(context, vision_queue, conveyor_queue, treatment_queue, load_robot_queue, stack_robot_queue)).start()
+        Thread(target=stacker_State_Machine, args=(context, stack_robot_queue, load_robot_queue, conveyor_queue)).start()
+        StartTcpServer(context, identity890=identity, address=(pi_address, 5021))
     else:
         print('Please Initialise the server before trying to start')
 
@@ -490,4 +515,4 @@ coilList = ["R1S1", "R1S2", "R1S3", "R1S4", "R1S5", "R1S6", "R1S7", "R1S8", "R1S
             "R2S3", "R2S4", "R2S5", "R2S6", "R2S7", "R2S8", "R2S9", "R2S10"]
 registerList = [""]
 initialise_server(sensorList, coilList)
-server_start("192.168.1.2")
+server_start("192.168.1.18")
