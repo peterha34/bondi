@@ -8,25 +8,24 @@ from MCP3008 import MCP3008
 class MQ():
 
     ######################### Hardware Related Macros #########################
-    MQ_PIN                       = 0        # define which analog input channel you are going to use (MCP3008)
-    RL_VALUE                     = 5        # define the load resistance on the board, in kilo ohms
-    RO_CLEAN_AIR_FACTOR          = 9.83     # RO_CLEAR_AIR_FACTOR=(Sensor resistance in clean air)/RO,
+    MQ_PIN                      = 0        # define which analog input channel you are going to use (MCP3008)
+    RL_VALUE                    = 5        # define the load resistance on the board, in kilo ohms
+    RO_CLEAN_AIR_FACTOR         = 9.83     # RO_CLEAR_AIR_FACTOR=(Sensor resistance in clean air)/RO,
                                             # which is derived from the chart in datasheet
  
     ######################### Software Related Macros #########################
-    CALIBARAION_SAMPLE_TIMES     = 50       # define how many samples you are going to take in the calibration phase
-    CALIBRATION_SAMPLE_INTERVAL  = 500      # define the time interal(in milisecond) between each samples in the
+    CALIBARAION_SAMPLE_TIMES    = 50       # define how many samples you are going to take in the calibration phase
+    CALIBRATION_SAMPLE_INTERVAL = 500      # define the time interal(in milisecond) between each samples in the
                                             # cablibration phase
-    READ_SAMPLE_INTERVAL         = 50       # define how many samples you are going to take in normal operation
-    READ_SAMPLE_TIMES            = 5        # define the time interal(in milisecond) between each samples in 
+    READ_SAMPLE_INTERVAL        = 50       # define how many samples you are going to take in normal operation
+    READ_SAMPLE_TIMES           = 5        # define the time interal(in milisecond) between each samples in 
                                             # normal operation
  
     ######################### Application Related Macros ######################
-    GAS_LPG                      = 0
-    GAS_CO                       = 1
-    GAS_SMOKE                    = 2
-    # alcohol component 
-    ALCOHOL = 3
+    GAS_LPG                     = 0
+    GAS_CO                      = 1
+    GAS_SMOKE                   = 2
+    ALCOHOL                     = 3 # alcohol component 
     
 
     def __init__(self, Ro=10, analogPin=0):
