@@ -39,10 +39,31 @@ TREAT3 = "ALCOHOL"
 
 def pol_sensors(treatment, context):
     mq = None
-
-    #initialises the gas sensor
+    sensortag = None
+    
     if treatment==TREAT3:
         mq = MQ();
+
+    #initialises the gas sensor
+    if treatment == TREAT1:
+        # JT - MAT DO I ADD THE INITIALISATION OF EACH THREAD HERE!?
+        print("Selecting Sensors") 
+        SensorSelect("24:71:89:E8:85:83") # Heat TS
+        print ("Selected")
+        print('Connecting to ' + "24:71:89:E8:85:83")
+        sensortag = SensorTag("24:71:89:E8:85:83")
+        print("Connected")
+        time.sleep(1) # Is this even needed
+    if treatment == TREAT2:
+        # JT - MAT DO I ADD THE INITIALISATION OF EACH THREAD HERE!?
+        print("Selecting Sensors")
+        SensorSelect("24:71:89:CC:1E:00") # Undulation TS
+        print ("Selected")
+        print('Connecting to ' + "24:71:89:CC:1E:00")
+        sensortag = SensorTag("24:71:89:CC:1E:00")
+        print("Connected")
+        time.sleep(1) # Is this even needed
+
 	
     while True:
         if treatment == TREAT1:
@@ -71,8 +92,10 @@ def pol_sensors(treatment, context):
                 update_register(register_names[2], accel, context)
 
         elif treatment == TREAT3:
-            alc = "AlcoholVal"
+            perc = mq.MQPercentage()
+            alc = (perc["ALCOHOL"])
             # 3 is alcohol
+            print("Alcohol: %g ppm" % (perc["ALCOHOL"]))
             update_register(register_names[3], alc, context)
         time.sleep(2)
 
@@ -92,14 +115,6 @@ def treatment_servs(treatment, context, ip):
         port = 8082
         sleepTime = 30
         unload = "UNLOAD_T1"
-        # JT - MAT DO I ADD THE INITIALISATION OF EACH THREAD HERE!?
-        print("Selecting Sensors") 
-        SensorSelect("24:71:89:E8:85:83") # Heat TS
-        print ("Selected")
-        print('Connecting to ' + "24:71:89:E8:85:83")
-        sensortag = SensorTag("24:71:89:E8:85:83")
-        print("Connected")
-        time.sleep(1) # Is this even needed
         
     elif treatment == TREAT2:
         startCommand = "START T2"
@@ -107,20 +122,13 @@ def treatment_servs(treatment, context, ip):
         port = 8083
         sleepTime = 50
         unload = "UNLOAD_T2"
-        # JT - MAT DO I ADD THE INITIALISATION OF EACH THREAD HERE!?
-        print("Selecting Sensors")
-        SensorSelect("24:71:89:CC:1E:00") # Undulation TS
-        print ("Selected")
-        print('Connecting to ' + "24:71:89:CC:1E:00")
-        sensortag = SensorTag("24:71:89:CC:1E:00")
-        print("Connected")
-        time.sleep(1) # Is this even needed
         
     elif treatment == TREAT3:
         startCommand = "START T3"
         coilname = coil_names[2]
         port = 8084
         sleepTime = 60
+
         unload = "UNLOAD_T3"
     serversocket.bind((ip, port))
     serversocket.listen(1)  # become a server socket, maximum 5 connections
@@ -133,7 +141,7 @@ def treatment_servs(treatment, context, ip):
             time.sleep(sleepTime)
             update_coil(coilname, [0], context)
             clientsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-            clientsocket.connect(("192.168.1.18", 8080))
+            clientsocket.connect(("192.168.1.5", 8080))
             clientsocket.send("TREATMENT_DATA:"+unload)
             time.sleep(1)
             clientsocket.close()
@@ -239,20 +247,19 @@ identity.MajorMinorRevision = '1.0'
 def server_start(piAddress):
     # This is the IP of my rasp pi
     if initialised:
-        time = 2
 
         # JT - Restart bluetooth on Pi cause it usually fkes up everytime it reboots
         print("Restarting bluetooth service")
         os.system("sudo service bluetooth restart")
         time.sleep(2)
         
-        Thread(target=pol_sensors, args=(TREAT1, register_queue, context)).start()
+        Thread(target=pol_sensors, args=(TREAT1, context)).start()
         Thread(target=treatment_servs, args=(TREAT1, context, piAddress)).start()
 
-        Thread(target=pol_sensors, args=(TREAT2, register_queue, context)).start()
+        Thread(target=pol_sensors, args=(TREAT2, context)).start()
         Thread(target=treatment_servs, args=(TREAT2, context, piAddress)).start()
 
-        Thread(target=pol_sensors, args=(TREAT3, register_queue, context)).start()
+        Thread(target=pol_sensors, args=(TREAT3, context)).start()
         Thread(target=treatment_servs, args=(TREAT3, context, piAddress)).start()
         StartTcpServer(context, identity=identity, address=(piAddress, 5020))
     else:
