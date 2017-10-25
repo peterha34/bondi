@@ -1,6 +1,7 @@
 import SimpleCV
 import collections
-
+import subprocess
+import time
 
 ColBound = collections.namedtuple('ColBound',['R','G','B'], verbose=False)
 
@@ -20,13 +21,27 @@ cropWide = 30
 cropHigh = 30
 
 # Load waste tray image, scale down for faster processing
-img = SimpleCV.Image("treatment.jpg")
-img = img.scale(640,360)
+#subprocess.call("raspistill -n -w %s -h %s -t 500 -o treatment1.bmp" % (640, 480), shell=True)
+withouttray = SimpleCV.Image("treatment1.bmp")
+withtray = SimpleCV.Image("treatment2.bmp")
+
+img = withouttray - withtray
+img = img.crop(320,240,300,300,True)
+# img = img.scale(640,360)
+img = img.smooth(algorithm_name='gaussianblur').binarize(thresh=(80,80,80))
+corners = img.findCorners(mindistance=30, minquality = 0.01)
+corners.draw(color=SimpleCV.Color.BLUE, width=4)
+img.show()
+for i in corners:
+    
+    print i
+
+
+time.sleep(1)
+
+""" This opens the image in an interactive view window"""
+
 img = img.toRGB()
-
-""" This opens the image in an interactive view window
-img.live() """
-
 # Cropping to isolate compartments and store in list
 comp = []
 comp.append(img.crop(col0,row0,cropWide,cropHigh,True))
