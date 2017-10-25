@@ -16,18 +16,13 @@ from threading import Thread
 from Queue import Queue
 import time
 import socket
+
+# JT - Shits that I import
+from cc2650sensortag import *
+import os
+import csv
+import datetime
 from mq import *
-
-# JT - shits that I import
-
-
-#---------------------------------------------------------------------------# 
-# configure the service logging
-#---------------------------------------------------------------------------# 
-import logging
-logging.basicConfig()
-log = logging.getLogger()
-log.setLevel(logging.DEBUG)
 
 # slave id is set to 0x00 and always will be, due to the use of a single context
 slave_id = 0x00
@@ -38,119 +33,129 @@ coil_names = None
 register_vals = None
 
 TREAT1 = "TEMP"
-TREAT2 = "SHAKE"
+TREAT2 = "ACCEL"
 TREAT3 = "ALCOHOL"
 
-def pol_sensors( treatment, queue, context ):
+
+def pol_sensors(treatment, context):
     mq = None
 
-   #initialises the gas sensor
+    #initialises the gas sensor
     if treatment==TREAT3:
-	mq = MQ();
+        mq = MQ();
+	
+    while True:
+        if treatment == TREAT1:
+            # get temp val
+            with open('ts1-sensordata.csv', 'a') as csvfile:
+                sensorwriter = csv.writer(csvfile)
+                time_now = datetime.datetime.now()
+                temp = sensortag.IRtemperature.read()
+                print('Time: {0} Temperature: {1}'.format(time_now, temp))
+                sensorwriter.writerow([time_now, temp])
+                time.sleep(1)            
+                update_register(register_names[0], temp, context)
+            
+        elif treatment == TREAT2:
+            # 1 is temp
+            # 2 is accel
+            with open('ts2-sensordata.csv', 'a') as csvfile:
+                sensorwriter = csv.writer(csvfile)
+                time_now = datetime.datetime.now()
+                temp = sensortag.IRtemperature.read()
+                accel = sensortag.accelerometer.read()
+                print('Time: {0} Temperature: {1} Acceleration: {2}' .format(time_now, temp, accel))
+                sensorwriter.writerow([time_now, temp, accel])
+                time.sleep(1)
+                update_register(register_names[1], temp, context)
+                update_register(register_names[2], accel, context)
+
+        elif treatment == TREAT3:
+            alc = "AlcoholVal"
+            # 3 is alcohol
+            update_register(register_names[3], alc, context)
+        time.sleep(2)
+
+
+def treatment_servs(treatment, context, ip):
+    serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    # 192.168.1.5 - ROBOT IP
+    startCommand = ""
+    coilname = ""
+    port = ""
+    sleepTime = ""
+    unload = ""
+
+    if treatment == TREAT1:
+        startCommand = "START T1"
+        coilname = coil_names[0]
+        port = 8082
+        sleepTime = 30
+        unload = "UNLOAD_T1"
+        # JT - MAT DO I ADD THE INITIALISATION OF EACH THREAD HERE!?
+        print("Selecting Sensors") 
+        SensorSelect("24:71:89:E8:85:83") # Heat TS
+        print ("Selected")
+        print('Connecting to ' + "24:71:89:E8:85:83")
+        sensortag = SensorTag("24:71:89:E8:85:83")
+        print("Connected")
+        time.sleep(1) # Is this even needed
+        
+    elif treatment == TREAT2:
+        startCommand = "START T2"
+        coilname = coil_names[1]
+        port = 8083
+        sleepTime = 50
+        unload = "UNLOAD_T2"
+        # JT - MAT DO I ADD THE INITIALISATION OF EACH THREAD HERE!?
+        print("Selecting Sensors")
+        SensorSelect("24:71:89:CC:1E:00") # Undulation TS
+        print ("Selected")
+        print('Connecting to ' + "24:71:89:CC:1E:00")
+        sensortag = SensorTag("24:71:89:CC:1E:00")
+        print("Connected")
+        time.sleep(1) # Is this even needed
+        
+    elif treatment == TREAT3:
+        startCommand = "START T3"
+        coilname = coil_names[2]
+        port = 8084
+        sleepTime = 60
+        unload = "UNLOAD_T3"
+    serversocket.bind((ip, port))
+    serversocket.listen(1)  # become a server socket, maximum 5 connections
 
     while True:
-        if treatment==TREAT1:
-	    # get temp val
-	    temp = "TempVal"
-	    # JT - I fked around with this
-            print('Temp: ', sensortag.IRtemperature.read())
-	    update_register("temperature",sensortag.IRtemperature.read(), context)
-	elif treatment==TREAT2:
-	    temp = "TempVal"
-	    shake = "ShakeVal"
-	    # 1 is temp
-	    # 2 is shake
-	    # JT - Also fked around with his
-	    print('Temp: ', sensortag.IRtemperature.read())
-            print('Acceleration: ', sensortag.accelerometer.read())
-	    update_register("temperature2",sensortag.IRtemperature.read(), context)
-	    update_register("acceleration",sensortag.accelerometer.read(), context)
-	elif treatment ==TREAT3:
-	    alc = "AlcoholVal"
-	    temp = "TempVal"
-	    # new stuff here
-	    # yea
-	    perc = mq.MQPercentage()
-	    print("Alcohol: %g ppm, CO: %g ppm" % (perc["ALCOHOL"], perc["CO"]))
-	    update_register("alcohol",(perc["ALCOHOL"]), context)
-	    # 4 is alcohol content
-	    #update_register(register_names[4],temp, context)
-        time.sleep(2)
-	
+        connection, address = serversocket.accept()
+        buf = connection.recv(64)
+        if buf == startCommand:
+            update_coil(coilname, [1], context)
+            time.sleep(sleepTime)
+            update_coil(coilname, [0], context)
+            clientsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            clientsocket.connect(("192.168.1.18", 8080))
+            clientsocket.send("TREATMENT_DATA:"+unload)
+            time.sleep(1)
+            clientsocket.close()
 
-def treatment_servs( treatment, queue, context, ip ):
-	serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	#192.168.1.5 - ROBOT IP
-	startCommand = ""
-	coilname = ""
-	port= ""
-	sleepTime = "";
-	
-	if treatment == TREAT1:
-		startCommand = "START T1"
-		coilname = coil_names[0]
-		port = 8080
-		sleepTime = 30
-		# JT - MAT DO I ADD THE INITIALISATION OF EACH THREAD HERE!?
-		print("Selecting Sensors") 
-                SensorSelect("24:71:89:E8:85:83") # Heat TS
-                print ("Selected")
-                print('Connecting to ' + "24:71:89:E8:85:83")
-                sensortag = SensorTag("24:71:89:E8:85:83")
-                print("Connected")
-                time.sleep(1) # Is this even needed
-                
-	elif treatment == TREAT2:
-		startCommand = "START T2"
-		coilname = coil_names[1]
-		port = 8081
-		sleepTime = 50
-		# JT - MAT DO I ADD THE INITIALISATION OF EACH THREAD HERE!?
-		print("Selecting Sensors")
-                SensorSelect("24:71:89:CC:1E:00") # Undulation TS
-                print ("Selected")
-                print('Connecting to ' + "24:71:89:CC:1E:00")
-                sensortag = SensorTag("24:71:89:CC:1E:00")
-                print("Connected")
-                time.sleep(1) # Is this even needed
-                
-	elif treatment == TREAT3:
-		startCommand = "START T3"
-		#TODO: swap this shit out for non-debug
-		coilname = coil_names[0]
-		port = 8082
-		sleepTime = 60
-	serversocket.bind((ip, port))
-	serversocket.listen(1) # become a server socket, maximum 5 connections
-
-	while True:
-		connection, address = serversocket.accept()
-		buf = connection.recv(64)
-		if buf == startCommand:
-			print("FUCKING TREATING LADS")
-			update_coil(coilname, "1", context)
-			time.sleep(sleepTime)
-			update_coil(coilname, "0", context)
-			print("TREATMENTS FUCKING DONE")
-			# TODO: send s signal to the robots to do their thing
-			
 
 # ---------------------------------------------------------------------------#
 # updates a register value
 # regname is the name of the register provided in the list at initialisation of the server
 # regval is the new value you want this register to hold
 # ---------------------------------------------------------------------------#
-def update_register( regname, regval, context):
+def update_register(regname, regval, context):
     register = 3
     address = 0x00 + register_names.index(regname)
     context[slave_id].setValues(register, address, [regval])
+
 
 # ---------------------------------------------------------------------------#
 # gets a register value
 # regname is the name of the register provided in the list at initialisation of the server
 # returns the current value of the named register
 # ---------------------------------------------------------------------------#
-def get_register( regname ):
+def get_register(regname):
     register = 3
     address = 0x00 + register_names.index(regname)
     return context[slave_id].getValues(register, address)
@@ -162,7 +167,7 @@ def get_register( regname ):
 # coilname is the name of the coil provided in the list at initialisation of the server
 # coilval is the new value you want this register to hold
 # ---------------------------------------------------------------------------#
-def update_coil( coilname, coilval, context):
+def update_coil(coilname, coilval, context):
     register = 1
     address = 0x00 + coil_names.index(coilname)
     context[slave_id].setValues(register, address, coilval)
@@ -173,7 +178,7 @@ def update_coil( coilname, coilval, context):
 # coil is the name of the coil provided in the list at initialisation of the server
 # returns the current value of the named coil (should be one or zero)
 # ---------------------------------------------------------------------------#
-def get_coil( coilname ):
+def get_coil(coilname):
     register = 1
     address = 0x00 + coil_names.index(coilname)
     return context[slave_id].getValues(register, address)
@@ -188,8 +193,7 @@ def get_coil( coilname ):
 # this is to abstract modbus functionality from calls to updating info
 # please make each register and coil name unique within a single context element
 # ---------------------------------------------------------------------------#
-def initialise_server( regnames, coilnames ):
-
+def initialise_server(regnames, coilnames):
     global register_names
     register_names = regnames
     global coil_names
@@ -207,11 +211,7 @@ def initialise_server( regnames, coilnames ):
     # DEV NOTE: tried only initialising certain block, at differing length to try save space and initialisation time
     #   result was errors being thrown, assuming due to fucked up address space - didn't dig into it, will just use
     #   these settings, no point in doing a RCA.
-    store = ModbusSlaveContext(
-        di=ModbusSequentialDataBlock(0, [17] * 100),
-        co=ModbusSequentialDataBlock(0, [17] * 100),
-        hr=ModbusSequentialDataBlock(0, [17] * 100),
-        ir=ModbusSequentialDataBlock(0, [17] * 100))
+    store = ModbusSlaveContext()
 
     global context
     # single is flagged, meaning only a single context will be created here
@@ -225,44 +225,42 @@ def initialise_server( regnames, coilnames ):
 # initialize the server information
 # ---------------------------------------------------------------------------#
 identity = ModbusDeviceIdentification()
-identity.VendorName  = 'pymodbus'
+identity.VendorName = 'pymodbus'
 identity.ProductCode = 'PM'
-identity.VendorUrl   = 'http://github.com/bashwork/pymodbus/'
+identity.VendorUrl = 'http://github.com/bashwork/pymodbus/'
 identity.ProductName = 'pymodbus Server'
-identity.ModelName   = 'pymodbus Server'
+identity.ModelName = 'pymodbus Server'
 identity.MajorMinorRevision = '1.0'
 
 
 # ---------------------------------------------------------------------------#
 # Start an instance of the server, after initiating it to the vals you need
 # ---------------------------------------------------------------------------#
-def server_start( piAddress ):
+def server_start(piAddress):
     # This is the IP of my rasp pi
     if initialised:
         time = 2
-        register_queue = Queue()
-	coil_queue = Queue()
 
         # JT - Restart bluetooth on Pi cause it usually fkes up everytime it reboots
-	print("Restarting bluetooth service")
+        print("Restarting bluetooth service")
         os.system("sudo service bluetooth restart")
         time.sleep(2)
         
-        Thread(target=pol_sensors, args=(TREAT1,register_queue, context)).start()
-        Thread(target=treatment_servs, args=(TREAT1,coil_queue, context, piAddress)).start()
-		
-        Thread(target=pol_sensors, args=(TREAT2,register_queue, context)).start()
-        Thread(target=treatment_servs, args=(TREAT2,coil_queue, context, piAddress)).start()
-		
-        Thread(target=pol_sensors, args=(TREAT3,register_queue, context)).start()
-        Thread(target=treatment_servs, args=(TREAT3,coil_queue, context, piAddress)).start()
-			
+        Thread(target=pol_sensors, args=(TREAT1, register_queue, context)).start()
+        Thread(target=treatment_servs, args=(TREAT1, context, piAddress)).start()
+
+        Thread(target=pol_sensors, args=(TREAT2, register_queue, context)).start()
+        Thread(target=treatment_servs, args=(TREAT2, context, piAddress)).start()
+
+        Thread(target=pol_sensors, args=(TREAT3, register_queue, context)).start()
+        Thread(target=treatment_servs, args=(TREAT3, context, piAddress)).start()
         StartTcpServer(context, identity=identity, address=(piAddress, 5020))
     else:
-        print('Please Initialise the server before trying to start')
+    	print('Please Initialise the server before trying to start')
 
-sensorList = ["alcohol"];
-coilList = ["treatment3"]
-initialise_server(sensorList, coilList)
+
+registerList = ["T1-temp", "T2-temp", "T2-accel", "T3-alc"]
+coilList = ["T1","T2","T3"]
+initialise_server(registerList, coilList)
 server_start("192.168.1.4")
 
