@@ -72,10 +72,10 @@ def pol_sensors(treatment, context):
                 sensorwriter = csv.writer(csvfile)
                 time_now = datetime.datetime.now()
                 temp = sensortag.IRtemperature.read()
-                print('Time: {0} Temperature: {1}'.format(time_now, temp))
-                sensorwriter.writerow([time_now, temp])
-                time.sleep(1)            
+                print('Time: {0} Temperature: {1}C'.format(time_now, temp))
+                sensorwriter.writerow([time_now, temp])           
                 update_register(register_names[0], temp, context)
+                time.sleep(1) 
             
         elif treatment == TREAT2:
             # 1 is temp
@@ -85,19 +85,23 @@ def pol_sensors(treatment, context):
                 time_now = datetime.datetime.now()
                 temp = sensortag.IRtemperature.read()
                 accel = sensortag.accelerometer.read()
-                print('Time: {0} Temperature: {1} Acceleration: {2}' .format(time_now, temp, accel))
+                print('Time: {0} Temperature: {1}C Acceleration: {2}g'.format(time_now, temp, accel))
                 sensorwriter.writerow([time_now, temp, accel])
-                time.sleep(1)
                 update_register(register_names[1], temp, context)
-                update_register(register_names[2], accel, context)
+                update_register(register_names[2], temp, context) #fix this
+                time.sleep(1)
 
         elif treatment == TREAT3:
-            perc = mq.MQPercentage()
-            alc = (perc["ALCOHOL"])
-            # 3 is alcohol
-            print("Alcohol: %g ppm" % (perc["ALCOHOL"]))
-            update_register(register_names[3], alc, context)
-        time.sleep(2)
+            with open('ts3-sensordata.csv', 'a') as csvfile:
+                sensorwriter = csv.writer(csvfile)
+                time_now = datetime.datetime.now()
+                perc = mq.MQPercentage()
+                alc = (perc["ALCOHOL"])
+                # 3 is alcohol
+                print('Time: {0} Alcohol: {1} ppm'.format(time_now, alc))
+                update_register(register_names[3], alc, context)
+                sensorwriter.writerow([time_now, alc])
+                time.sleep(1)
 
 
 def treatment_servs(treatment, context, ip):

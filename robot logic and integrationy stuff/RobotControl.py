@@ -48,6 +48,9 @@ UNLOAD_T2 = "UNLOAD_T2"
 UNLOAD_T3 = "UNLOAD_T3"
 UNLOAD_F = "UNLOAD_F"
 
+# The socket broker runs in it's own thread, and listens for incoming traffic on port 8080.
+# This function also handles the delegation of incoming traffic to an appropriate queue
+# The queues are used to pass data between the appropriate threads.
 def socket_broker( pi_address, vision_queue, conveyor_queue, treatment_queue, load_robot_queue, stash_robot_queue ):
     serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     serversocket.bind((pi_address, 8080))
@@ -77,7 +80,7 @@ def socket_broker( pi_address, vision_queue, conveyor_queue, treatment_queue, lo
             print("Error lads -> just what are you putting in my sockets?")
 
 
-
+# R1 Retrieves the unsorted tray and places on the conveyor
 def get_tray_initial( context ):
     print("getting tray initial")
     update_coil(context, "R1S1", [0])
@@ -86,14 +89,14 @@ def get_tray_initial( context ):
     update_coil(context, "R1S2", [0])
     update_coil(context, "R1S1", [1])
 
-
+# Sends a tcp message to the vision detection to request that it takes a picture
 def get_vision_results():
     clientsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     clientsocket.connect(('192.168.1.18', 8081))
     clientsocket.send("GET_IMAGE")
     clientsocket.close()
 
-
+# Takes the disc in the designated slot to treatment site 1 
 def disc_to_t1( context, slot ):
     print("disc_to_t1")
     update_coil(context, "R1S1", [0])
@@ -102,7 +105,7 @@ def disc_to_t1( context, slot ):
     update_coil(context, "R1S1", [1])
     update_coil(context, "R1S3", [0])
 
-
+# Takes the disc in the designated slot to treatment site 2
 def disc_to_t2( context, slot ):
     print("disc_to_t2")
     update_coil(context, "R1S1", [0])
@@ -111,7 +114,7 @@ def disc_to_t2( context, slot ):
     update_coil(context, "R1S1", [1])
     update_coil(context, "R1S4", [0])
 
-
+# Takes the disc in the designated slot to treatment site 3
 def disc_to_t3( context, slot ):
     print("disc_to_t3")
     update_coil(context, "R1S1", [0])
@@ -120,7 +123,7 @@ def disc_to_t3( context, slot ):
     update_coil(context, "R1S1", [1])
     update_coil(context, "R1S5", [0])
 
-
+# Takes the unidentified disc in the designated slot to quarantine zone
 def disc_to_quarantine( context, slot ):
     update_coil(context, "R1S1", [0])
     update_coil(context, "R1S6", [1])
@@ -128,7 +131,7 @@ def disc_to_quarantine( context, slot ):
     update_coil(context, "R1S1", [1])
     update_coil(context, "R1S5", [0])
 
-
+# returns empty unsorted tray to the place it was picked up from
 def return_unsorted_tray(context):
     print("returning unsorted")
     update_coil(context, "R1S1", [0])
@@ -137,7 +140,7 @@ def return_unsorted_tray(context):
     update_coil(context, "R1S1", [1])
     update_coil(context, "R1S7", [0])
 
-
+#sends control commands to the conver via TCP socket
 def control_conveyor( command):
     print("sliding dat conveyor: " + command)
     clientsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -145,28 +148,28 @@ def control_conveyor( command):
     clientsocket.send(command)
     clientsocket.close()
 
-
+#sends command to start treatment 1 via tcp to the sensor pi
 def start_treatment_1():
     clientsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     clientsocket.connect(('192.168.1.18', 8082))
     clientsocket.send("START T1")
     clientsocket.close()
 
-
+#sends command to start treatment 2 via tcp to the sensor pi
 def start_treatment_2():
     clientsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     clientsocket.connect(('192.168.1.18', 8083))
     clientsocket.send("START T2")
     clientsocket.close()
 
-
+#sends command to start treatment 3 via tcp to the sensor pi
 def start_treatment_3():
     clientsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     clientsocket.connect(('192.168.1.18', 8084))
     clientsocket.send("START T3")
     clientsocket.close()
 
-
+#sends command to unload treatment 1 via tcp to the sensor pi
 def unload_treatment_1( context, disc_count):
     update_coil(context, "R1S1", [0])
     update_coil(context, "R1S8", [1])
@@ -176,7 +179,7 @@ def unload_treatment_1( context, disc_count):
     update_coil(context, "R1S1", [1])
     update_coil(context, "R1S8", [0])
 
-
+#sends command to unload treatment 2 via tcp to the sensor pi
 def unload_treatment_2( context, disc_count):
     update_coil(context, "R1S1", [0])
     update_coil(context, "R1S9", [1])
@@ -186,7 +189,7 @@ def unload_treatment_2( context, disc_count):
     update_coil(context, "R1S1", [1])
     update_coil(context, "R1S9", [0])
 
-
+#sends command to unload treatment 3 via tcp to the sensor pi
 def unload_treatment_3(context, disc_count):
     update_coil(context, "R1S1", [0])
     update_coil(context, "R1S10", [1])
@@ -196,7 +199,10 @@ def unload_treatment_3(context, disc_count):
     update_coil(context, "R1S1", [1])
     update_coil(context, "R1S10", [0])
 
-
+#sends command to unload a failed via tcp to the sensor pi
+# TODO check which treatment site failed, have something here that will tell
+# the robots which treatment site whould be unloaded
+# I.e. if treatment 1 fails, don't unload it normally, but hit this instead
 def unload_failed_treatment(context, disc_count):
     update_coil(context, "R1S1", [0])
     update_coil(context, "R1S11", [1])
@@ -207,7 +213,7 @@ def unload_failed_treatment(context, disc_count):
     update_coil(context, "R1S11", [0])
 
 
-
+# Robot 2 retrieves treatment tray 1 from it's designated slot
 def get_tray_1(context):
     print("grabbing tray 1")
     update_coil(context, "R2S1", [0])
@@ -216,7 +222,7 @@ def get_tray_1(context):
     update_coil(context, "R2S1", [1])
     update_coil(context, "R2S2", [0])
 
-
+# Robot 2 retrieves treatment tray 2 from it's designated slot
 def get_tray_2(context):
     print("grabbing tray 2")
     update_coil(context, "R2S1", [0])
@@ -225,7 +231,7 @@ def get_tray_2(context):
     update_coil(context, "R2S1", [1])
     update_coil(context, "R2S3", [0])
 
-
+# Robot 2 retrieves treatment tray 3 from it's designated slot
 def get_tray_3(context):
     print("grabbing tray 3")
     update_coil(context, "R2S1", [0])
@@ -234,6 +240,7 @@ def get_tray_3(context):
     update_coil(context, "R2S1", [1])
     update_coil(context, "R2S4", [0])
 
+# Robot 2 stows treatment tray 1 back in the designated slot
 def stash_tray_1(context):
     print("stowing tray 1")
     update_coil(context, "R2S1", [0])
@@ -242,6 +249,7 @@ def stash_tray_1(context):
     update_coil(context, "R2S1", [1])
     update_coil(context, "R2S5", [0])
 
+# Robot 2 stows treatment tray 2 back in the designated slot
 def stash_tray_2(context):
     print("stowing tray 2")
     update_coil(context, "R2S1", [0])
@@ -250,7 +258,7 @@ def stash_tray_2(context):
     update_coil(context, "R2S1", [1])
     update_coil(context, "R2S6", [0])
 
-
+# Robot 2 stows treatment tray 3 back in the designated slot
 def stash_tray_3(context):
     print("stowing tray 3")
     update_coil(context, "R2S1", [0])
@@ -259,7 +267,7 @@ def stash_tray_3(context):
     update_coil(context, "R2S1", [1])
     update_coil(context, "R2S7", [0])
 
-
+# Robot 2 stows ailed treatment tray back in the designated slot
 def stash_tray_f(context):
     update_coil(context, "R2S1", [0])
     update_coil(context, "R2S8", [1])
@@ -267,7 +275,11 @@ def stash_tray_f(context):
     update_coil(context, "R2S1", [1])
     update_coil(context, "R2S8", [0])
 
-
+# State machine for the loader robot
+# handles the logic for a complete 'Cycle' for loader robot 1
+# handles partial control logic for an entire cycle. e.g. tells treatments to start
+# Works syncronously with stacker robot, conveyor and treatment sites
+# to ensure that a strict order of events is maintained
 def loader_State_Machine(context, visionQueue, conveyorQueue, treatmentQueue, loader_robot_queue, stackrobotqueue):
     time.sleep(10)
     print("Setting intial state R1")
@@ -332,9 +344,9 @@ def loader_State_Machine(context, visionQueue, conveyorQueue, treatmentQueue, lo
             print("What is happening in the unload phase guys???")
 
 
-    # move arm out of way of vision detection
-    # request vision detection
-    #
+# State machine for the stacker robot
+# works syncronously with loader robot to ensure a strict series of events
+# Handles some extra control logic, such as commands to rol lthe conveyor
 def stacker_State_Machine( context, stack_robot_queue, loader_robot_queue, conveyor_queue):
     time.sleep(10)
     print("Setting intial state R2")
