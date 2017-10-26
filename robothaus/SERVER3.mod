@@ -185,6 +185,7 @@ PROC main()
         ParseMsg receivedString;
 	
         !//Execution of the command
+        TPWrite instructionCode;
         TEST instructionCode
             CASE 0: !Ping
                 IF nParams = 0 THEN
