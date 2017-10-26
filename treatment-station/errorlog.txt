@@ -1,0 +1,19 @@
+Error: Sensor script fail to connect
+Status: Unresolved
+Description:
+- Execution of script for sensor sometimes work and sometimes doesnt...
+- Problem could be because of timing or error in the sensor itself...
+Error Log:
+pi@raspberrypi:~/Desktop/sensor-17.10.23 $ sudo python test.py 
+Connecting...
+Traceback (most recent call last):
+  File "test.py", line 6, in <module>
+    dev = btle.Peripheral("B0:91:22:F6:A8:86")
+  File "/usr/local/lib/python2.7/dist-packages/bluepy/btle.py", line 353, in __init__
+    self._connect(deviceAddr, addrType, iface)
+  File "/usr/local/lib/python2.7/dist-packages/bluepy/btle.py", line 402, in _connect
+    "Failed to connect to peripheral %s, addr type: %s" % (addr, addrType))
+bluepy.btle.BTLEException: Failed to connect to peripheral B0:91:22:F6:A8:86, addr type: public
+
+
+
