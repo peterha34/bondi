@@ -60,9 +60,9 @@ def getDistance(a, b):
 img = img.crop(320,240,300,300,True)
 # img = img.scale(640,360)
 img = img.smooth(algorithm_name='gaussianblur').binarize(thresh=(80,80,80))
-corners = img.findCorners(mindistance=30, minquality = 0.01)
-# corners.draw(color=SimpleCV.Color.BLUE, width=4)
-
+corners = img.findCorners(mindistance=15, minquality = 0.02)
+corners.draw(color=SimpleCV.Color.BLUE, width=4)
+img.show()
 pp = findRect(corners)
 pp = pp[-2:]
 for i in pp:
