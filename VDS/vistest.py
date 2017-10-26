@@ -1,7 +1,10 @@
+#!/usr/bin/python
+
 import SimpleCV
 import collections
 import subprocess
 import time
+import math
 
 ColBound = collections.namedtuple('ColBound',['R','G','B'], verbose=False)
 
@@ -24,19 +27,48 @@ cropHigh = 30
 #subprocess.call("raspistill -n -w %s -h %s -t 500 -o treatment1.bmp" % (640, 480), shell=True)
 withouttray = SimpleCV.Image("treatment1.bmp")
 withtray = SimpleCV.Image("treatment2.bmp")
-
 img = withouttray - withtray
+
+def findRect(corners):
+    i = 0
+    PointPair = collections.namedtuple('PointPair',['distance','A','B'], verbose=False)
+    pointPairs = []
+
+    for point in corners[i:]:
+        for nextPoint in corners[i+1:]:
+            pointPairs.append(PointPair(getDistance(point,nextPoint),point,nextPoint))
+        i = i+1
+
+    pointPairs.sort(key=lambda x:x[0])
+
+    #for p in pointPairs:
+     #   print p.distance
+    
+    return pointPairs;
+
+def getDistance(a, b):
+    x1 = float(a.x)
+    y1 = float(a.y)
+    x2 = float(b.x)
+    y2 = float(b.y)
+    dist = math.sqrt(math.pow((x2-x1),2) + math.pow((y2-y1),2))
+    return dist;
+
+
+    
+
 img = img.crop(320,240,300,300,True)
 # img = img.scale(640,360)
 img = img.smooth(algorithm_name='gaussianblur').binarize(thresh=(80,80,80))
 corners = img.findCorners(mindistance=30, minquality = 0.01)
-corners.draw(color=SimpleCV.Color.BLUE, width=4)
+# corners.draw(color=SimpleCV.Color.BLUE, width=4)
+
+pp = findRect(corners)
+pp = pp[-2:]
+for i in pp:
+    i.A.draw(color=SimpleCV.Color.BLUE, width=4)
+    i.B.draw(color=SimpleCV.Color.BLUE, width=4)
 img.show()
-for i in corners:
-    
-    print i
-
-
 time.sleep(1)
 
 """ This opens the image in an interactive view window"""
