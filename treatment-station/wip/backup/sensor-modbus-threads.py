@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 '''
 An abstraction layer for the pimodbus libraries, to ensure controlled usage and garuntee software quality
-
 Author: MM
 '''
 # ---------------------------------------------------------------------------#
@@ -17,9 +16,6 @@ from Queue import Queue
 import time
 import socket
 from mq import *
-
-# JT - shits that I import
-
 
 #---------------------------------------------------------------------------# 
 # configure the service logging
@@ -52,19 +48,14 @@ def pol_sensors( treatment, queue, context ):
         if treatment==TREAT1:
 	    # get temp val
 	    temp = "TempVal"
-	    # JT - I fked around with this
-            print('Temp: ', sensortag.IRtemperature.read())
-	    update_register("temperature",sensortag.IRtemperature.read(), context)
+	    update_register(register_names[0],temp, context)
 	elif treatment==TREAT2:
 	    temp = "TempVal"
 	    shake = "ShakeVal"
 	    # 1 is temp
 	    # 2 is shake
-	    # JT - Also fked around with his
-	    print('Temp: ', sensortag.IRtemperature.read())
-            print('Acceleration: ', sensortag.accelerometer.read())
-	    update_register("temperature2",sensortag.IRtemperature.read(), context)
-	    update_register("acceleration",sensortag.accelerometer.read(), context)
+	    update_register(register_names[1],temp, context)
+	    update_register(register_names[2],temp, context)
 	elif treatment ==TREAT3:
 	    alc = "AlcoholVal"
 	    temp = "TempVal"
@@ -91,29 +82,11 @@ def treatment_servs( treatment, queue, context, ip ):
 		coilname = coil_names[0]
 		port = 8080
 		sleepTime = 30
-		# JT - MAT DO I ADD THE INITIALISATION OF EACH THREAD HERE!?
-		print("Selecting Sensors") 
-                SensorSelect("24:71:89:E8:85:83") # Heat TS
-                print ("Selected")
-                print('Connecting to ' + "24:71:89:E8:85:83")
-                sensortag = SensorTag("24:71:89:E8:85:83")
-                print("Connected")
-                time.sleep(1) # Is this even needed
-                
 	elif treatment == TREAT2:
 		startCommand = "START T2"
 		coilname = coil_names[1]
 		port = 8081
 		sleepTime = 50
-		# JT - MAT DO I ADD THE INITIALISATION OF EACH THREAD HERE!?
-		print("Selecting Sensors")
-                SensorSelect("24:71:89:CC:1E:00") # Undulation TS
-                print ("Selected")
-                print('Connecting to ' + "24:71:89:CC:1E:00")
-                sensortag = SensorTag("24:71:89:CC:1E:00")
-                print("Connected")
-                time.sleep(1) # Is this even needed
-                
 	elif treatment == TREAT3:
 		startCommand = "START T3"
 		#TODO: swap this shit out for non-debug
@@ -242,17 +215,12 @@ def server_start( piAddress ):
         time = 2
         register_queue = Queue()
 	coil_queue = Queue()
-
-        # JT - Restart bluetooth on Pi cause it usually fkes up everytime it reboots
-	print("Restarting bluetooth service")
-        os.system("sudo service bluetooth restart")
-        time.sleep(2)
-        
-        Thread(target=pol_sensors, args=(TREAT1,register_queue, context)).start()
-        Thread(target=treatment_servs, args=(TREAT1,coil_queue, context, piAddress)).start()
 		
-        Thread(target=pol_sensors, args=(TREAT2,register_queue, context)).start()
-        Thread(target=treatment_servs, args=(TREAT2,coil_queue, context, piAddress)).start()
+        #Thread(target=pol_sensors, args=(TREAT1,register_queue, context)).start()
+        #Thread(target=treatment_servs, args=(TREAT1,coil_queue, context, piAddress)).start()
+		
+        #Thread(target=pol_sensors, args=(TREAT2,register_queue, context)).start()
+        #Thread(target=treatment_servs, args=(TREAT2,coil_queue, context, piAddress)).start()
 		
         Thread(target=pol_sensors, args=(TREAT3,register_queue, context)).start()
         Thread(target=treatment_servs, args=(TREAT3,coil_queue, context, piAddress)).start()
@@ -265,4 +233,3 @@ sensorList = ["alcohol"];
 coilList = ["treatment3"]
 initialise_server(sensorList, coilList)
 server_start("192.168.1.4")
-
