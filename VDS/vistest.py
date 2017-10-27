@@ -5,6 +5,10 @@ import collections
 import subprocess
 import time
 import math
+import numpy
+
+#subprocess.call("raspistill -n -w %s -h %s -t 500 -o treatment1.bmp" % (640, 480), shell=True)
+PointPair = collections.namedtuple('PointPair',['distance','pointA','pointB'], verbose=False)
 
 ColBound = collections.namedtuple('ColBound',['R','G','B'], verbose=False)
 
@@ -24,54 +28,87 @@ cropWide = 30
 cropHigh = 30
 
 # Load waste tray image, scale down for faster processing
-#subprocess.call("raspistill -n -w %s -h %s -t 500 -o treatment1.bmp" % (640, 480), shell=True)
 withouttray = SimpleCV.Image("treatment1.bmp")
 withtray = SimpleCV.Image("treatment2.bmp")
 img = withouttray - withtray
 
-def findRect(corners):
-    i = 0
-    PointPair = collections.namedtuple('PointPair',['distance','A','B'], verbose=False)
+def findRectPoints(corners):
     pointPairs = []
-
+    i = 0
     for point in corners[i:]:
         for nextPoint in corners[i+1:]:
             pointPairs.append(PointPair(getDistance(point,nextPoint),point,nextPoint))
         i = i+1
-
     pointPairs.sort(key=lambda x:x[0])
-
-    #for p in pointPairs:
-     #   print p.distance
-    
-    return pointPairs;
+    return pointPairs[-2:];
 
 def getDistance(a, b):
     x1 = float(a.x)
     y1 = float(a.y)
     x2 = float(b.x)
     y2 = float(b.y)
-    dist = math.sqrt(math.pow((x2-x1),2) + math.pow((y2-y1),2))
-    return dist;
+    return math.sqrt(math.pow((x2-x1),2) + math.pow((y2-y1),2));
 
+def getHorizAngle(a, b):
+    x1 = float(a.x)
+    y1 = float(a.y)
+    x2 = float(b.x)
+    y2 = float(b.y)
+    return numpy.arctan2(y2-y1,x2-x1)
 
+#Center the image to isolate the tray
+img = img.crop(img.width/2,img.height/2,img.width/1.8,img.height/1.8,True)
+
+img = img.smooth(algorithm_name='blur').binarize(thresh=(80,80,80))
+corners = img.findCorners(mindistance=5,minquality=0.02)
+
+corners = findRectPoints(corners)
+
+for i in corners:
+    i.pointA.draw(color=SimpleCV.Color.BLUE, width=4)
+    i.pointB.draw(color=SimpleCV.Color.BLUE, width=4)
+
+point1 = corners[0].pointA
+point2 = corners[1].pointA
+point3 = corners[0].pointB
+point4 = corners[1].pointB
+print point1, point2
+ang = getHorizAngle(point1,point2)
+print ang
+
+print corners[0].distance
+p12dist = getDistance(point1,point2)
+for i in range (0,int(p12dist)+1,int(p12dist/6)):
+    pointd1 = point1.x + i*math.cos(ang)
+    pointd2 = point1.y + i*math.sin(ang)
+    img.drawPoints([(pointd1,pointd2)], color=SimpleCV.Color.RED,width=2)
     
+p23dist = getDistance(point2,point3)
+for i in range (0,int(p23dist)+1,int(p23dist/6)):
+    pointd1 = point2.x + i*math.cos(numpy.deg2rad(90)+ang)
+    pointd2 = point2.y + i*math.sin(numpy.deg2rad(90)+ang)
+    img.drawPoints([(pointd1,pointd2)], color=SimpleCV.Color.RED,width=2)
 
-img = img.crop(320,240,300,300,True)
-# img = img.scale(640,360)
-img = img.smooth(algorithm_name='gaussianblur').binarize(thresh=(80,80,80))
-corners = img.findCorners(mindistance=15, minquality = 0.02)
-corners.draw(color=SimpleCV.Color.BLUE, width=4)
-img.show()
-pp = findRect(corners)
-pp = pp[-2:]
-for i in pp:
-    i.A.draw(color=SimpleCV.Color.BLUE, width=4)
-    i.B.draw(color=SimpleCV.Color.BLUE, width=4)
+p34dist = getDistance(point3,point4)
+for i in range (0,int(p34dist)+1,int(p34dist/6)):
+    pointd1 = point3.x + i*math.cos(numpy.deg2rad(180)+ang)
+    pointd2 = point3.y + i*math.sin(numpy.deg2rad(180)+ang)
+    img.drawPoints([(pointd1,pointd2)], color=SimpleCV.Color.RED,width=2)
+
+p41dist = getDistance(point4,point1)
+for i in range (0,int(p41dist)+1,int(p41dist/6)):
+    pointd1 = point4.x + i*math.cos(numpy.deg2rad(270)+ang)
+    pointd2 = point4.y + i*math.sin(numpy.deg2rad(270)+ang)
+    img.drawPoints([(pointd1,pointd2)], color=SimpleCV.Color.RED,width=2)
+"""for i in range (0,19):
+    pointd1 = point1.x + i*(corners[0].distance/18)*math.cos(ang+numpy.deg2rad(45))
+    pointd2 = point1.y + i*(corners[0].distance/18)*math.sin(ang+numpy.deg2rad(45))
+    img.drawPoints([(pointd1,pointd2)], color=SimpleCV.Color.RED,width=2)"""
+
+
+
 img.show()
 time.sleep(1)
-
-""" This opens the image in an interactive view window"""
 
 img = img.toRGB()
 # Cropping to isolate compartments and store in list
