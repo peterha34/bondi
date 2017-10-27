@@ -44,10 +44,6 @@ def SensorSelect(Device):
         SENSOR_TEMP = True
         global SENSOR_ACCE
         SENSOR_ACCE = True
-        global SENSOR_HUM
-        SENSOR_HUM = True
-        global SENSOR_LIGHT
-        SENSOR_LIGHT = True
         
     if (Device == "C4:BE:84:70:14:8B"):
         global SENSOR_TEMP

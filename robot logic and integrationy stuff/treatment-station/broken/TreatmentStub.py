@@ -40,30 +40,35 @@ TREAT3 = "ALCOHOL"
 def pol_sensors(treatment, context):
     mq = None
     sensortag = None
-    
-    if treatment==TREAT3:
-        mq = MQ();
 
-    #initialises the gas sensor
+    #initialises the sensors       
     if treatment == TREAT1:
-        # JT - MAT DO I ADD THE INITIALISATION OF EACH THREAD HERE!?
         print("Selecting Sensors") 
         SensorSelect("24:71:89:E8:85:83") # Heat TS
         print ("Selected")
         print('Connecting to ' + "24:71:89:E8:85:83")
         sensortag = SensorTag("24:71:89:E8:85:83")
         print("Connected")
-        time.sleep(1) # Is this even needed
+        time.sleep(1)
+        
     if treatment == TREAT2:
-        # JT - MAT DO I ADD THE INITIALISATION OF EACH THREAD HERE!?
         print("Selecting Sensors")
         SensorSelect("24:71:89:CC:1E:00") # Undulation TS
         print ("Selected")
         print('Connecting to ' + "24:71:89:CC:1E:00")
         sensortag = SensorTag("24:71:89:CC:1E:00")
         print("Connected")
-        time.sleep(1) # Is this even needed
-
+        time.sleep(1)
+        
+    if treatment==TREAT3:
+        print("Selecting Sensors")
+        SensorSelect("C4:BE:84:70:14:8B") # Alcohol TS
+        print ("Selected")
+        print('Connecting to ' + "C4:BE:84:70:14:8B")
+        sensortag = SensorTag("C4:BE:84:70:14:8B")
+        print("Connected")
+        time.sleep(1)
+        mq = MQ(); #Alcohol Sensor
 	
     while True:
         if treatment == TREAT1:
@@ -92,15 +97,18 @@ def pol_sensors(treatment, context):
                 time.sleep(1)
 
         elif treatment == TREAT3:
+            # 4 is alcohol
+            # 3 is temp
             with open('ts3-sensordata.csv', 'a') as csvfile:
                 sensorwriter = csv.writer(csvfile)
                 time_now = datetime.datetime.now()
                 perc = mq.MQPercentage()
                 alc = (perc["ALCOHOL"])
-                # 3 is alcohol
-                print('Time: {0} Alcohol: {1} ppm'.format(time_now, alc))
-                update_register(register_names[3], alc, context)
-                sensorwriter.writerow([time_now, alc])
+                temp = sensortag.IRtemperature.read()
+                print('Time: {0} Temperature: {1}C Alcohol: {2} ppm'.format(time_now, temp, alc))
+                update_register(register_names[3], temp, context)
+                update_register(register_names[4], alc, context)
+                sensorwriter.writerow([time_now, temp, alc])
                 time.sleep(1)
 
 
@@ -270,7 +278,7 @@ def server_start(piAddress):
     	print('Please Initialise the server before trying to start')
 
 
-registerList = ["T1-temp", "T2-temp", "T2-accel", "T3-alc"]
+registerList = ["T1-temp", "T2-temp", "T2-accel", "T3-temp", "T3-alc"]
 coilList = ["T1","T2","T3"]
 initialise_server(registerList, coilList)
 server_start("192.168.1.4")
