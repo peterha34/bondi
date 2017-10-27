@@ -61,22 +61,15 @@ img = img.crop(320,240,300,300,True)
 # img = img.scale(640,360)
 img = img.smooth(algorithm_name='gaussianblur').binarize(thresh=(80,80,80))
 corners = img.findCorners(mindistance=15, minquality = 0.02)
-# corners.draw(color=SimpleCV.Color.BLUE, width=4)
-
+corners.draw(color=SimpleCV.Color.BLUE, width=4)
+img.show()
 pp = findRect(corners)
 pp = pp[-2:]
 for i in pp:
-    print i.A , i.B
     i.A.draw(color=SimpleCV.Color.BLUE, width=4)
     i.B.draw(color=SimpleCV.Color.BLUE, width=4)
 img.show()
 time.sleep(1)
-
-print "tl-br", getDistance(pp[0].A, pp[1].A) 
-print "tl-tr", getDistance(pp[1].A, pp[0].B)
-print "tr-br", getDistance(pp[0].B, pp[0].A)
-print "bl-br", getDistance(pp[1].B, pp[0].A)
-
 
 """ This opens the image in an interactive view window"""
 
