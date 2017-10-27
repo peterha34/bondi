@@ -3,7 +3,7 @@ import datetime
 import random
 import time
 
-with open('sensordata.csv', 'w') as csvfile:
+with open('sensordata.csv', 'a') as csvfile:
     sensorwriter = csv.writer(csvfile)
     sensorwriter.writerow(['Time', 'Temperature (C)', 'Acceleration']) 
     while True:

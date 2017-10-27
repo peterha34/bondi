@@ -1,5 +1,7 @@
 -------------
-Tariq boi sensor: 24:71:89:E8:85:83
+Heat-Station MAC - 24:71:89:E8:85:83
+Undulation-Station MAC - 24:71:89:CC:1E:00
+Alcohol-Station MAC - C4:BE:84:70:14:8B
 
 ------------------------------
 // Bluepy library creator notes and stuff!
@@ -9,15 +11,10 @@ https://github.com/IanHarvey/bluepy
 https://www.elinux.org/RPi_Bluetooth_LE
 
 
-
 // check if the thingo is connected
 sudo hcitool lecc <MAC address>
 e.g sudo hcitool lecc B0:91:22:F6:A8:86
 
-
-
-// Runs sensortag
-sudo sensortag -T -B B0:91:22:F6:A8:86
 
 // Restart bluetooh
 service bluetooth restart
