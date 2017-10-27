@@ -200,15 +200,15 @@ PROC main()
 		ELSEIF command=431 THEN
 		!// Treatment site 1 to tray slot 3, height offest of 1 disc
 			TPWrite "Recieving command: 431"
-			returnStr := "421"	
+			returnStr := "431"	
 		ELSEIF command=432 THEN
 		!// Treatment site 1 to tray slot 3, height offest of 2 disc
 			TPWrite "Recieving command: 432"
-			returnStr := "422"	
+			returnStr := "432"	
 		ELSEIF command=433 THEN
 		!// Treatment site 1 to tray slot 3, height offest of 3 disc
 			TPWrite "Recieving command: 433"
-			returnStr := "423"		
+			returnStr := "433"		
 		ELSEIF command=441 THEN
 		!// Treatment site 1 to tray slot 4, height offest of 1 disc
 			TPWrite "Recieving command: 441"
@@ -279,8 +279,8 @@ PROC main()
 			returnStr := "492"
 		ELSEIF command=493 THEN	
 		!// Treatment site 1 to tray slot 9, height offest of 3 disc
-			TPWrite "Recieving command: 492"
-			returnStr := "492"
+			TPWrite "Recieving command: 493"
+			returnStr := "493"
 		ELSEIF command=511 THEN
 		!// Treatment site 2 to tray slot 1, height offest of 1 disc
 			TPWrite "Recieving command: 511"
@@ -312,7 +312,7 @@ PROC main()
 		ELSEIF command=532 THEN
 		!// Treatment site 2 to tray slot 3, height offest of 2 disc
 			TPWrite "Recieving command: 532"
-			returnStr := "523"
+			returnStr := "532"
 		ELSEIF command=533 THEN	
 		!// Treatment site 2 to tray slot 3, height offest of 3 disc
 			TPWrite "Recieving command: 533"
