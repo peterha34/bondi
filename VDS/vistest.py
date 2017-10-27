@@ -32,7 +32,7 @@ withouttray = SimpleCV.Image("treatment1.bmp")
 withtray = SimpleCV.Image("treatment2.bmp")
 img = withouttray - withtray
 
-def findRectPoints(corners):
+def findCornerPoints(corners):
     pointPairs = []
     i = 0
     for point in corners[i:]:
@@ -54,72 +54,127 @@ def getHorizAngle(a, b):
     y1 = float(a.y)
     x2 = float(b.x)
     y2 = float(b.y)
-    return numpy.arctan2(y2-y1,x2-x1)
+    return numpy.arctan2(y2-y1,x2-x1);
 
-#Center the image to isolate the tray
-img = img.crop(img.width/2,img.height/2,img.width/1.8,img.height/1.8,True)
+def identifyRectPoints(corners):
+    rect = {'topLeft': None,'topRight': None,
+                   'bottomLeft': None,'bottomRight': None }
+    for pair in corners:
+        x1 = pair.pointA.x
+        y1 = pair.pointA.y
+        x2 = pair.pointB.x
+        y2 = pair.pointB.y
+        if rect['topLeft']:
+            if (x1-x2)>0 and (x1-rect['topLeft'].x)>0:
+                rect['topRight'] = pair.pointA
+                rect['bottomLeft'] = pair.pointB
+            else:
+                rect['topLeft'] = pair.pointB
+                rect['bottomRight'] = pair.pointA
+        elif (x1-x2)>0:
+            rect['topLeft'] = pair.pointB
+            rect['bottomRight'] = pair.pointA
+            rect['topRight'] = pair.pointA
+            rect['bottomLeft'] = pair.pointB
+        else:
+            rect['topLeft'] = pair.pointA
+            rect['bottomRight'] = pair.pointB
+            rect['topRight'] = pair.pointB
+            rect['bottomLeft'] = pair.pointA
 
-img = img.smooth(algorithm_name='blur').binarize(thresh=(80,80,80))
-corners = img.findCorners(mindistance=5,minquality=0.02)
+    return rect;
 
-corners = findRectPoints(corners)
+def getTraySlots(img):
+    #Center the image to isolate the tray
+    img = img.crop(img.width/2,img.height/2,img.width/1.8,img.height/1.8,True)
+    img = img.smooth(algorithm_name='blur').binarize(thresh=(80,80,80))
+    corners = img.findCorners(mindistance=5,minquality=0.02)
+    corners = findCornerPoints(corners)
+    corners = identifyRectPoints(corners)
+    angleOffset = getHorizAngle(corners['topLeft'],corners['topRight'])
 
-for i in corners:
-    i.pointA.draw(color=SimpleCV.Color.BLUE, width=4)
-    i.pointB.draw(color=SimpleCV.Color.BLUE, width=4)
+    p12dist = getDistance(corners['topLeft'],corners['topRight'])
+    for i in range (0,7):
+        pointd1 = corners['topLeft'].x + (p12dist/6.0)*i*math.cos(angleOffset)
+        pointd2 = corners['topLeft'].y + (p12dist/6.0)*i*math.sin(angleOffset)
+        img.drawPoints([(pointd1,pointd2)], color=SimpleCV.Color.RED,width=2)
+        
+    p23dist = getDistance(corners['topRight'],corners['bottomRight'])
+    for i in range (0,7):
+        pointd1 = corners['topRight'].x + (p23dist/6.0)*i*math.cos(numpy.deg2rad(90)+angleOffset)
+        pointd2 = corners['topRight'].y + (p23dist/6.0)*i*math.sin(numpy.deg2rad(90)+angleOffset)
+        img.drawPoints([(pointd1,pointd2)], color=SimpleCV.Color.RED,width=2)
 
-point1 = corners[0].pointA
-point2 = corners[1].pointA
-point3 = corners[0].pointB
-point4 = corners[1].pointB
-print point1, point2
-ang = getHorizAngle(point1,point2)
-print ang
+    p34dist = getDistance(corners['bottomRight'],corners['bottomLeft'])
+    for i in range (0,7):
+        pointd1 = corners['bottomRight'].x + (p34dist/6.0)*i*math.cos(numpy.deg2rad(180)+angleOffset)
+        pointd2 = corners['bottomRight'].y + (p34dist/6.0)*i*math.sin(numpy.deg2rad(180)+angleOffset)
+        img.drawPoints([(pointd1,pointd2)], color=SimpleCV.Color.RED,width=2)
 
-print corners[0].distance
-p12dist = getDistance(point1,point2)
-for i in range (0,int(p12dist)+1,int(p12dist/6)):
-    pointd1 = point1.x + i*math.cos(ang)
-    pointd2 = point1.y + i*math.sin(ang)
-    img.drawPoints([(pointd1,pointd2)], color=SimpleCV.Color.RED,width=2)
-    
-p23dist = getDistance(point2,point3)
-for i in range (0,int(p23dist)+1,int(p23dist/6)):
-    pointd1 = point2.x + i*math.cos(numpy.deg2rad(90)+ang)
-    pointd2 = point2.y + i*math.sin(numpy.deg2rad(90)+ang)
-    img.drawPoints([(pointd1,pointd2)], color=SimpleCV.Color.RED,width=2)
+    p41dist = getDistance(corners['bottomLeft'],corners['topLeft'])
+    for i in range (0,7):
+        pointd1 = corners['bottomLeft'].x + (p41dist/6.0)*i*math.cos(numpy.deg2rad(270)+angleOffset)
+        pointd2 = corners['bottomLeft'].y + (p41dist/6.0)*i*math.sin(numpy.deg2rad(270)+angleOffset)
+        img.drawPoints([(pointd1,pointd2)], color=SimpleCV.Color.RED,width=2)
 
-p34dist = getDistance(point3,point4)
-for i in range (0,int(p34dist)+1,int(p34dist/6)):
-    pointd1 = point3.x + i*math.cos(numpy.deg2rad(180)+ang)
-    pointd2 = point3.y + i*math.sin(numpy.deg2rad(180)+ang)
-    img.drawPoints([(pointd1,pointd2)], color=SimpleCV.Color.RED,width=2)
+    columnx = (p12dist/6.0)*math.cos(angleOffset)
+    columny= (p12dist/6.0)*math.sin(angleOffset)
 
-p41dist = getDistance(point4,point1)
-for i in range (0,int(p41dist)+1,int(p41dist/6)):
-    pointd1 = point4.x + i*math.cos(numpy.deg2rad(270)+ang)
-    pointd2 = point4.y + i*math.sin(numpy.deg2rad(270)+ang)
-    img.drawPoints([(pointd1,pointd2)], color=SimpleCV.Color.RED,width=2)
+    rowx = (p23dist/6.0)*math.cos(angleOffset)
+    rowy= (p23dist/6.0)*math.sin(angleOffset)
 
-compart1x = point1.x + 2/6*p12dist*math.cos(ang) + 2/6*p23dist*math.cos(numpy.deg2rad(90)+ang)
-compart1y = point1.y + 2/6*p12dist*math.sin(ang) + 2/6*p23dist*math.sin(numpy.deg2rad(90)+ang)
-img.drawPoints([(compart1x,compart1y)], color=SimpleCV.Color.GREEN,width=2)
+    compart1x = corners['topLeft'].x + 1*(p12dist/6.0)*math.cos(angleOffset) + 1*(p23dist/6.0)*math.cos(numpy.deg2rad(90)+angleOffset)
+    compart1y = corners['topLeft'].y + 1*(p12dist/6.0)*math.sin(angleOffset) + 1*(p23dist/6.0)*math.sin(numpy.deg2rad(90)+angleOffset)
+    img.drawPoints([(compart1x,compart1y)], color=SimpleCV.Color.GREEN ,width=2)
 
-img.show()
-time.sleep(1)
+    compart2x = corners['topLeft'].x + 3*(p12dist/6.0)*math.cos(angleOffset) + (1.0/6)*p23dist*math.cos(numpy.deg2rad(90)+angleOffset)
+    compart1y = corners['topLeft'].y + 3*(p12dist/6.0)*math.sin(angleOffset) + (1.0/6)*p23dist*math.sin(numpy.deg2rad(90)+angleOffset)
+    img.drawPoints([(compart2x,compart1y)], color=SimpleCV.Color.GREEN ,width=2)
 
-img = img.toRGB()
+    compart3x = corners['topLeft'].x + 5*(p12dist/6.0)*math.cos(angleOffset) + (1.0/6)*p23dist*math.cos(numpy.deg2rad(90)+angleOffset)
+    compart1y = corners['topLeft'].y + 5*(p12dist/6.0)*math.sin(angleOffset) + (1.0/6)*p23dist*math.sin(numpy.deg2rad(90)+angleOffset)
+    img.drawPoints([(compart3x,compart1y)], color=SimpleCV.Color.GREEN ,width=2)
+
+    compart1x = corners['topLeft'].x + 1*(p12dist/6.0)*math.cos(angleOffset) + (3.0/6)*p23dist*math.cos(numpy.deg2rad(90)+angleOffset)
+    compart2y = corners['topLeft'].y + 1*(p12dist/6.0)*math.sin(angleOffset) + (3.0/6)*p23dist*math.sin(numpy.deg2rad(90)+angleOffset)
+    img.drawPoints([(compart1x,compart2y)], color=SimpleCV.Color.GREEN ,width=2)
+
+    compart2x = corners['topLeft'].x + 3*(p12dist/6.0)*math.cos(angleOffset) + (3.0/6)*p23dist*math.cos(numpy.deg2rad(90)+angleOffset)
+    compart2y = corners['topLeft'].y + 3*(p12dist/6.0)*math.sin(angleOffset) + (3.0/6)*p23dist*math.sin(numpy.deg2rad(90)+angleOffset)
+    img.drawPoints([(compart2x,compart2y)], color=SimpleCV.Color.GREEN ,width=2)
+
+    compart3x = corners['topLeft'].x + 5*(p12dist/6.0)*math.cos(angleOffset) + (3.0/6)*p23dist*math.cos(numpy.deg2rad(90)+angleOffset)
+    compart2y = corners['topLeft'].y + 5*(p12dist/6.0)*math.sin(angleOffset) + (3.0/6)*p23dist*math.sin(numpy.deg2rad(90)+angleOffset)
+    img.drawPoints([(compart3x,compart2y)], color=SimpleCV.Color.GREEN ,width=2)
+
+    compart1x = corners['topLeft'].x + (1.0/6)*p12dist*math.cos(angleOffset) + (5.0/6)*p23dist*math.cos(numpy.deg2rad(90)+angleOffset)
+    compart3y = corners['topLeft'].y + (1.0/6)*p12dist*math.sin(angleOffset) + (5.0/6)*p23dist*math.sin(numpy.deg2rad(90)+angleOffset)
+    img.drawPoints([(compart1x,compart3y)], color=SimpleCV.Color.GREEN ,width=2)
+
+    compart2x = corners['topLeft'].x + (3.0/6)*p12dist*math.cos(angleOffset) + (5.0/6)*p23dist*math.cos(numpy.deg2rad(90)+angleOffset)
+    compart3y = corners['topLeft'].y + (3.0/6)*p12dist*math.sin(angleOffset) + (5.0/6)*p23dist*math.sin(numpy.deg2rad(90)+angleOffset)
+    img.drawPoints([(compart2x,compart3y)], color=SimpleCV.Color.GREEN ,width=2)
+
+    compart3x = corners['topLeft'].x + (5.0/6)*p12dist*math.cos(angleOffset) + (5.0/6)*p23dist*math.cos(numpy.deg2rad(90)+angleOffset)
+    compart3y = corners['topLeft'].y + (5.0/6)*p12dist*math.sin(angleOffset) + (5.0/6)*p23dist*math.sin(numpy.deg2rad(90)+angleOffset)
+    img.drawPoints([(compart3x,compart3y)], color=SimpleCV.Color.GREEN ,width=2)
+
+    img.show()
+
+slotCoords = getTraySlots(img)
+
+withtray = withtray.toRGB()
 # Cropping to isolate compartments and store in list
 comp = []
-comp.append(img.crop(col0,row0,cropWide,cropHigh,True))
-comp.append(img.crop(col1,row0,cropWide,cropHigh,True))
-comp.append(img.crop(col2,row0,cropWide,cropHigh,True))
-comp.append(img.crop(col0,row1,cropWide,cropHigh,True))
-comp.append(img.crop(col2,row1,cropWide,cropHigh,True))
-comp.append(img.crop(col0,row2,cropWide,cropHigh,True))
-comp.append(img.crop(col1,row2,cropWide,cropHigh,True))
-comp.append(img.crop(col2,row2,cropWide,cropHigh,True))
-
+comp.append(withtray.crop(col0,row0,cropWide,cropHigh,True))
+comp.append(withtray.crop(col1,row0,cropWide,cropHigh,True))
+comp.append(withtray.crop(col2,row0,cropWide,cropHigh,True))
+comp.append(withtray.crop(col0,row1,cropWide,cropHigh,True))
+comp.append(withtray.crop(col2,row1,cropWide,cropHigh,True))
+comp.append(withtray.crop(col0,row2,cropWide,cropHigh,True))
+comp.append(withtray.crop(col1,row2,cropWide,cropHigh,True))
+comp.append(withtray.crop(col2,row2,cropWide,cropHigh,True))
+withtray.show()
 # Iterate through each compartment and detect if disc and color
 for i in range (0,len(comp)):
     temp = comp[i].meanColor()
