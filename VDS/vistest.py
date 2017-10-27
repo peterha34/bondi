@@ -100,12 +100,10 @@ for i in range (0,int(p41dist)+1,int(p41dist/6)):
     pointd1 = point4.x + i*math.cos(numpy.deg2rad(270)+ang)
     pointd2 = point4.y + i*math.sin(numpy.deg2rad(270)+ang)
     img.drawPoints([(pointd1,pointd2)], color=SimpleCV.Color.RED,width=2)
-"""for i in range (0,19):
-    pointd1 = point1.x + i*(corners[0].distance/18)*math.cos(ang+numpy.deg2rad(45))
-    pointd2 = point1.y + i*(corners[0].distance/18)*math.sin(ang+numpy.deg2rad(45))
-    img.drawPoints([(pointd1,pointd2)], color=SimpleCV.Color.RED,width=2)"""
 
-
+compart1x = point1.x + 2/6*p12dist*math.cos(ang) + 2/6*p23dist*math.cos(numpy.deg2rad(90)+ang)
+compart1y = point1.y + 2/6*p12dist*math.sin(ang) + 2/6*p23dist*math.sin(numpy.deg2rad(90)+ang)
+img.drawPoints([(compart1x,compart1y)], color=SimpleCV.Color.GREEN,width=2)
 
 img.show()
 time.sleep(1)
