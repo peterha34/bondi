@@ -9,7 +9,7 @@
 # navigate to bondi directory, then to this directory, then execute python script, then back home
 cd /
 cd /home/pi/Desktop/bondi/emergency-system
-sudo python switch.py
+python switch.py
 cd /
 
 # do the same as above for your own code, change directory locatoin and script name..
