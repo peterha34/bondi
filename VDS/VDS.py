@@ -7,27 +7,24 @@ import time
 import math
 import numpy
 
-#subprocess.call("raspistill -n -w %s -h %s -t 500 -o treatment1.bmp" % (640, 480), shell=True)
 PointPair = collections.namedtuple('PointPair',['distance','pointA','pointB'], verbose=False)
 ColBound = collections.namedtuple('ColBound',['R','G','B'], verbose=False)
 DiscBox = collections.namedtuple('DiscBox',['x','y'], verbose=False)
 
-colBounds = {'blueLow': ColBound(0,0,100),
-              'blueHigh': ColBound(80,200,255)}
+colBounds = {'blackLow': ColBound(0,0,0), 'blackHigh': ColBound(0,0,0),
+             'blueLow': ColBound(0,0,100), 'blueHigh': ColBound(80,200,255),
+             'redLow': ColBound(0,0,0), 'redHigh': ColBound(0,0,0),
+             'greenLow': ColBound(0,0,0), 'greenHigh': ColBound(0,0,0)}
+TRAY_CODE = 0
+RED_CODE = 1
+BLUE_CODE = 2
+GREEN_CODE = 3
+UNIDENTIFIED_CODE = 9
 
-# Load waste tray image
-baseline = SimpleCV.Image("treatment1.bmp")
-withtray = SimpleCV.Image("treatment2.bmp")
-
-# Crop the image to isolate the tray and speed up processing
-imgWidth = withtray.width
-imgHeight = withtray.height
-scale = 0.625
-baseline = baseline.crop(imgWidth*0.5,imgHeight*0.5,imgWidth*scale,imgHeight*scale,True)
-withtray = withtray.crop(imgWidth*0.5,imgHeight*0.5,imgWidth*scale,imgHeight*scale,True)
-
-img = baseline - withtray
-
+BASELINE_FILE_NAME = "baseline.bmp"
+TRAYIMAGE_FILE_NAME = "trayImg.bmp"
+CROP_SCALE = 0.625
+ 
 def findCornerPoints(corners):
     pointPairs = []
     i = 0
@@ -77,47 +74,89 @@ def getTraySlots(img):
     slots = []
     img = img.smooth(algorithm_name='blur').binarize(thresh=(80,80,80))
     corners = img.findCorners(mindistance=5,minquality=0.02)
-    corners = findCornerPoints(corners)
-    corners = identifyRectPoints(corners)
-    angleOffset = getHorizAngle(corners['topLeft'],corners['topRight'])
+    diagPoints = findCornerPoints(corners)
+    rectPoints = identifyRectPoints(diagPoints)
+    angleOffset = getHorizAngle(rectPoints['topLeft'],rectPoints['topRight'])
+   
+    p12dist = getDistance(rectPoints['topLeft'],rectPoints['topRight'])        
+    p23dist = getDistance(rectPoints['topRight'],rectPoints['bottomRight'])
+    p34dist = getDistance(rectPoints['bottomRight'],rectPoints['bottomLeft'])
+    p41dist = getDistance(rectPoints['bottomLeft'],rectPoints['topLeft'])
 
-    p12dist = getDistance(corners['topLeft'],corners['topRight'])        
-    p23dist = getDistance(corners['topRight'],corners['bottomRight'])
-    p34dist = getDistance(corners['bottomRight'],corners['bottomLeft'])
-    p41dist = getDistance(corners['bottomLeft'],corners['topLeft'])
-
-    slots.append((p12dist+p23dist+p34dist+p41dist)/20.0)
+    slots.append((p12dist+p23dist+p34dist+p41dist)/22.0)
+    
     for i in range(1,6,2):
         for j in range(1,6,2):
-            x = corners['topLeft'].x + j*(p12dist/6.0)*math.cos(angleOffset) + i*(p23dist/6.0)*math.cos(numpy.deg2rad(90)+angleOffset)
-            y = corners['topLeft'].y + j*(p12dist/6.0)*math.sin(angleOffset) + i*(p23dist/6.0)*math.sin(numpy.deg2rad(90)+angleOffset)
+            x = rectPoints['topLeft'].x + j*((p12dist+p34dist)/12.0)*math.cos(angleOffset) + i*((p23dist+p41dist)/12.0)*math.cos(numpy.deg2rad(90)+angleOffset)
+            y = rectPoints['topLeft'].y + j*((p12dist+p34dist)/12.0)*math.sin(angleOffset) + i*((p23dist+p41dist)/12.0)*math.sin(numpy.deg2rad(90)+angleOffset)
             img.drawPoints([(x,y)], color=SimpleCV.Color.RED,width=2)
             slots.append(DiscBox(x,y))
             img.show()
-            time.sleep(2)
+            time.sleep(0.3)
 
     return slots;
 
-slotCoords = getTraySlots(img)
+def loadImages(): 
+    # Load waste tray image
+    baseline = SimpleCV.Image(BASELINE_FILE_NAME)
+    trayImg = SimpleCV.Image(TRAYIMAGE_FILE_NAME)
 
-withtray = withtray.toRGB()
-# Cropping to isolate compartments and store in list
-comp = []
-cropSize = slotCoords[0]
-for i in range(1,len(slotCoords)):
-    comp.append(withtray.crop(slotCoords[i].x,slotCoords[i].y,cropSize,cropSize,True))
+    # Crop the image to isolate the tray and speed up processing
+    imgWidth = trayImg.width
+    imgHeight = trayImg.height
+    baseline = baseline.crop(imgWidth*0.5,imgHeight*0.5,imgWidth*CROP_SCALE,imgHeight*CROP_SCALE,True)
+    trayImg = trayImg.crop(imgWidth*0.5,imgHeight*0.5,imgWidth*CROP_SCALE,imgHeight*CROP_SCALE,True)
+    diff = baseline - trayImg
+    
+    return baseline,trayImg,diff;
 
+def detectWasteType():
+    baseline,trayImg,diff = loadImages()
+    #Attempt to identify waste tray compartment coords
+    slotCoords = getTraySlots(diff)
+    compartments = []
+    # Retrieve compartment size stored as first element in list
+    cropSize = slotCoords[0]
+    # Then crop and store image area around compartment coordinates 
+    for i in range(1,len(slotCoords)):
+        compartments.append(trayImg.crop(slotCoords[i].x,slotCoords[i].y,cropSize,cropSize,True))
 
-# Iterate through each compartment and detect if disc and color
-for i in range (0,len(comp)):
-    comp[i].show()
-    time.sleep(2)
-    temp = comp[i].meanColor()
-    print "Comp%d: r:%d, g:%d, b:%d" %(i,temp[0],temp[1],temp[2])
+    return formatVDSMessage(trayImg,compartments);
 
-    if temp[0]>=colBounds['blueLow'].R and temp[0]<=colBounds['blueHigh'].R and\
-        temp[1]>=colBounds['blueLow'].G and temp[1]<=colBounds['blueHigh'].G and\
-        temp[2]>=colBounds['blueLow'].B and temp[2]<=colBounds['blueHigh'].B:
-            print "It's blue"
-    else:
-        print "WOT IS THIS SHIT(LITERALLY)"
+def formatVDSMessage(trayImg, compartments):
+    result = [0,0,0,0,0,0,0,0,0]
+    # Convert image to RGB to match our colour space
+    trayImg = trayImg.toRGB()  
+    # Iterate through each compartment and identify colour
+    for i in range (0,len(compartments)):
+        compartments[i].show()
+        time.sleep(0.5)
+        result[i] = str(identifyColour(compartments[i].meanColor()))
+    result.pop(4)
+    return "VISION_DATA:"+",".join(result);
+
+def identifyColour(RGBvalue):
+    print "r:%d, g:%d, b:%d" %(RGBvalue[0],RGBvalue[1],RGBvalue[2])
+    
+    if isColour(RGBvalue, "blue"):
+            return BLUE_CODE;
+    elif isColour(RGBvalue, "red"):
+            return RED_CODE;     
+    elif isColour(RGBvalue, "green"):
+            return GREEN_CODE;       
+    elif isColour(RGBvalue, "black"):
+            return TRAY_CODE;
+    return UNIDENTIFIED_CODE;
+
+def isColour(RGBvalue, colour):
+    colLow = colour+"Low"
+    colHigh = colour+"High"
+
+    if RGBvalue[0]>=colBounds[colLow].R and RGBvalue[0]<=colBounds[colHigh].R and\
+    RGBvalue[1]>=colBounds[colLow].G and RGBvalue[1]<=colBounds[colHigh].G and\
+    RGBvalue[2]>=colBounds[colLow].B and RGBvalue[2]<=colBounds[colHigh].B:
+        return True;
+    return False;
+    
+    
+print detectWasteType()
