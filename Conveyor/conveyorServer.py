@@ -8,8 +8,8 @@ from pymodbus.datastore import ModbusSequentialDataBlock
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
 from pymodbus.transaction import ModbusRtuFramer, ModbusAsciiFramer
 
-#myIP = '192.168.1.3'
-myIP = '172.19.125.238'
+myIP = '192.168.1.3'
+##myIP = '172.19.125.238'
 movePort = 8091
 stopPort = 8090
 robotIP = '192.168.1.5'
@@ -51,38 +51,24 @@ def start_thread_main(passedContext):
             update_coil("stopped", [0], passedContext)
             update_coil("left", [1], passedContext)
             conveyor.move(0,3.5)
-<<<<<<< HEAD
             update_coil("left", [0], passedContext)
             update_coil("stopped", [1], passedContext)
             CONVEYOR_RETURNS = "Left move success"
-=======
-            RETURN_MSG = "Left move success"
->>>>>>> 33f297c79f6ed349d90738f83bafd9517612b94f
         elif buf == RIGHT_COMMAND:
             print RIGHT_COMMAND
             update_coil("stopped", [0], passedContext)
             update_coil("right", [1], passedContext)
             conveyor.move(1,3.5)
-<<<<<<< HEAD
             update_coil("right", [0], passedContext)
             update_coil("stopped", [1], passedContext)
             CONVEYOR_RETURNS = "Right move success"
-=======
-            RETURN_MSG = "Right move success"
->>>>>>> 33f297c79f6ed349d90738f83bafd9517612b94f
         else:
             print "Invalid command"
             CONVEYOR_RETURNS = "Invalid command"
             
-<<<<<<< HEAD
         #clientsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         #clientsocket.connect((robotIP, robotPort))
         #clientsocket.send("CONVEYOR_DATA:" + CONVEYOR_RETURNS)
-=======
-        clientsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        clientsocket.connect((robotIP, robotPort))
-        clientsocket.send("CONVEYOR_DATA:" + RETURN_MSG)
->>>>>>> 33f297c79f6ed349d90738f83bafd9517612b94f
         time.sleep(0.5)
 
 
