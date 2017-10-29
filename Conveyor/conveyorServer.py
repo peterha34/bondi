@@ -8,8 +8,8 @@ from pymodbus.datastore import ModbusSequentialDataBlock
 from pymodbus.datastore import ModbusSlaveContext, ModbusServerContext
 from pymodbus.transaction import ModbusRtuFramer, ModbusAsciiFramer
 
-#myIP = '192.168.1.3'
-myIP = '172.19.125.238'
+myIP = '192.168.1.3'
+##myIP = '172.19.125.238'
 movePort = 8091
 stopPort = 8090
 robotIP = '192.168.1.5'
