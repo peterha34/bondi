@@ -154,5 +154,13 @@ def detectWasteType():
         compartments.append(trayImg.crop(slotCoords[i].x,slotCoords[i].y,cropSize,cropSize,True))
 
     return formatVDSMessage(compartments);
-    
-print detectWasteType()
+
+def captureBaseline():
+    subprocess.call("raspistill -n -w %s -h %s -t 10 -o baseline.bmp" % (640, 480), shell=True)
+    time.sleep(0.5)
+    return "VISION_DATA:OK";
+
+def captureTray():
+    subprocess.call("raspistill -n -w %s -h %s -t 10 -o trayImg.bmp" % (640, 480), shell=True)
+    time.sleep(0.5)
+    return "VISION_DATA:OK";

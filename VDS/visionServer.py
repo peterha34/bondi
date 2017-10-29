@@ -6,14 +6,13 @@ Author: MM
 
 #!/usr/bin/python # shebang used for python
 import subprocess # imports all subproccess that may be required for the code
-import csv
-from SimpleCV import Color,Image, DrawingLayer, Camera # Imports specific modules from simpleCV
 import time
 import socket
+import VDS
 
 ROBOT_IP = "192.168.1.5"
 IMAGE_COMMAND = "GET_IMAGE"
-BASELINE_COMMAND = "GET_BASELINE"
+BASELINE_COMMAND = "GET5BASELINE"
 IP = "192.168.1.2"
 SERVER_PORT = 8081
 CLIENT_PORT = 8080
@@ -25,15 +24,15 @@ while True:
     connection, address = serversocket.accept()
     buf = connection.recv(64)
     if buf == BASELINE_COMMAND:
-        time.sleep(5)
         clientsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         clientsocket.connect((ROBOT_IP, CLIENT_PORT))
-        clientsocket.send("VISION_DATA:OK")
+        clientsocket.send(VDS.captureBaseline())
         time.sleep(1)
         clientsocket.close()
     if buf == IMAGE_COMMAND:
+        VDS.captureTray()
         clientsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         clientsocket.connect((ROBOT_IP, CLIENT_PORT))
-        clientsocket.send("VISION_DATA:1,2,3,1,2,3,1,2")
+        clientsocket.send(VDS.detectWasteType())
         time.sleep(1)
         clientsocket.close()
