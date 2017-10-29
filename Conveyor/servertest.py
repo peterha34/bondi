@@ -42,18 +42,18 @@ def start_thread_main():
         if buf == LEFT_COMMAND:
             print LEFT_COMMAND
             conveyor.move(0,3.5)
-            CONVEYOR_RETURNS = "Left move success"
+            RETURN_MSG = "Left move success"
         elif buf == RIGHT_COMMAND:
             print RIGHT_COMMAND
             conveyor.move(1,3.5)
-            CONVEYOR_RETURNS = "Right move success"
+            RETURN_MSG = "Right move success"
         else:
             print "Invalid command"
             CONVEYOR_RETURNS = "Invalid command"
             
         clientsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         clientsocket.connect((robotIP, robotPort))
-        clientsocket.send("CONVEYOR_DATA:" + CONVEYOR_RETURNS)
+        clientsocket.send("CONVEYOR_DATA:" + RETURN_MSG)
         time.sleep(0.5)
         
 
