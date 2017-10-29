@@ -71,7 +71,7 @@ def identifyRectPoints(corners):
 
     return rect;
 
-def getTraySlots(img):
+def getTraySlots(img,original):
     slots = []
     img = img.smooth(algorithm_name='blur').binarize(thresh=(80,80,80))
     corners = img.findCorners(mindistance=5,minquality=0.02)
@@ -90,6 +90,9 @@ def getTraySlots(img):
         for j in range(1,6,2):
             x = rectPoints['topLeft'].x + j*((p12dist+p34dist)/12.0)*math.cos(angleOffset) + i*((p23dist+p41dist)/12.0)*math.cos(numpy.deg2rad(90)+angleOffset)
             y = rectPoints['topLeft'].y + j*((p12dist+p34dist)/12.0)*math.sin(angleOffset) + i*((p23dist+p41dist)/12.0)*math.sin(numpy.deg2rad(90)+angleOffset)
+            original.drawPoints([(x,y)], color=SimpleCV.Color.RED,width=2)
+            original.show()
+            time.sleep(1)
             slots.append(DiscBox(x,y))
     return slots;
 
@@ -113,22 +116,29 @@ def formatVDSMessage(compartments):
     for i in range (0,len(compartments)):
         # Convert image to HSV to match our colour space
         compartments[i] = compartments[i].toHSV()
+        print "Compartment "+ str(i)
         result[i] = str(identifyColour(compartments[i].meanColor()))
     result.pop(4)
     return "VISION_DATA:"+",".join(result);
 
 def identifyColour(HSVvalue):
-    
+    print "HSV value: "+ str(HSVvalue)
     if isColour(HSVvalue, "blue"):
-            return BLUE_CODE;
+        print "Blue Detected\n"
+        return BLUE_CODE;
     elif isColour(HSVvalue, "red"):
-            return RED_CODE;
+        print "Red Detected\n"
+        return RED_CODE;
     elif isColour(HSVvalue, "red2"):
-            return RED_CODE; 
+        print "Red Detected\n"
+        return RED_CODE; 
     elif isColour(HSVvalue, "green"):
-            return GREEN_CODE;       
+        print "Green Detected\n"
+        return GREEN_CODE;       
     elif isColour(HSVvalue, "black"):
-            return TRAY_CODE;
+        print "Just The Tray\n"
+        return TRAY_CODE;
+    print "I dont know what this is\n"
     return UNIDENTIFIED_CODE;
 
 def isColour(HSVvalue, colour):
@@ -144,14 +154,13 @@ def isColour(HSVvalue, colour):
 def detectWasteType():
     baseline,trayImg,diff = loadImages()
     #Attempt to identify waste tray compartment coords
-    slotCoords = getTraySlots(diff)
+    slotCoords = getTraySlots(diff,trayImg)
     compartments = []
     # Retrieve compartment size stored as first element in list
     cropSize = slotCoords[0]
     # Then crop and store image area around compartment coordinates 
     for i in range(1,len(slotCoords)):
         compartments.append(trayImg.crop(slotCoords[i].x,slotCoords[i].y,cropSize,cropSize,True))
-
     return formatVDSMessage(compartments);
 
 def captureBaseline():
