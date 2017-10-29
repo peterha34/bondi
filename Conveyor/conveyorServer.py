@@ -66,9 +66,9 @@ def start_thread_main(passedContext):
             print "Invalid command"
             CONVEYOR_RETURNS = "Invalid command"
             
-        #clientsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        #clientsocket.connect((robotIP, robotPort))
-        #clientsocket.send("CONVEYOR_DATA:" + CONVEYOR_RETURNS)
+        clientsocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        clientsocket.connect((robotIP, robotPort))
+        clientsocket.send("CONVEYOR_DATA:" + CONVEYOR_RETURNS)
         time.sleep(0.5)
 
 
