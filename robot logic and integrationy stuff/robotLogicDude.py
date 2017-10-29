@@ -250,7 +250,7 @@ def return_unsorted_tray(context, queue):
     update_coil(context, "R1S1", [0])
     update_coil(context, "R1S7", [1])
     send_R1(2)
-	queue.get()
+    queue.get()
     update_coil(context, "R1S1", [1])
     update_coil(context, "R1S7", [0])
 
