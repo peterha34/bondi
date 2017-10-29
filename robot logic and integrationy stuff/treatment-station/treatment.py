@@ -15,8 +15,6 @@ from threading import Thread
 from Queue import Queue
 import time
 import socket
-
-# JT - Shits that I import
 from cc2650sensortag import *
 import os
 import csv
@@ -42,41 +40,36 @@ def pol_sensors(treatment, context):
     
     if treatment==TREAT3:
         mq = MQ();
-        # JT - MAT DO I ADD THE INITIALISATION OF EACH THREAD HERE!?
         print("Selecting Sensors") 
         SensorSelect("C4:BE:84:70:14:8B") # Heat TS
         print ("Selected")
         print('Connecting to ' + "C4:BE:84:70:14:8B")
         sensortag = SensorTag("C4:BE:84:70:14:8B")
         print("Connected")
-        time.sleep(1) # Is this even needed
+        time.sleep(1)
 
-
-    #initialises the gas sensor
     if treatment == TREAT1:
-        # JT - MAT DO I ADD THE INITIALISATION OF EACH THREAD HERE!?
         print("Selecting Sensors") 
         SensorSelect("24:71:89:E8:85:83") # Heat TS
         print ("Selected")
         print('Connecting to ' + "24:71:89:E8:85:83")
         sensortag = SensorTag("24:71:89:E8:85:83")
         print("Connected")
-        time.sleep(1) # Is this even needed
+        time.sleep(1)
         
     if treatment == TREAT2:
-        # JT - MAT DO I ADD THE INITIALISATION OF EACH THREAD HERE!?
         print("Selecting Sensors")
         SensorSelect("24:71:89:CC:1E:00") # Undulation TS
         print ("Selected")
         print('Connecting to ' + "24:71:89:CC:1E:00")
         sensortag = SensorTag("24:71:89:CC:1E:00")
         print("Connected")
-        time.sleep(1) # Is this even needed
+        time.sleep(1)
 
 	
     while True:
         if treatment == TREAT1:
-            # get temp val
+            # 0 is temp
             with open('ts1-sensordata.csv', 'a') as csvfile:
                 sensorwriter = csv.writer(csvfile)
                 time_now = datetime.datetime.now()
@@ -97,17 +90,18 @@ def pol_sensors(treatment, context):
                 print('Time: {0} Temperature: {1}C Acceleration: {2}g'.format(time_now, temp, accel))
                 sensorwriter.writerow([time_now, temp, accel])
                 update_register(register_names[1], temp, context)
-                update_register(register_names[2], temp, context) #fix this
+                update_register(register_names[2], accel, context)
                 time.sleep(1)
 
         elif treatment == TREAT3:
+            # 3 is temp
+            # 4 is alcohol
             with open('ts3-sensordata.csv', 'a') as csvfile:
                 sensorwriter = csv.writer(csvfile)
                 time_now = datetime.datetime.now()
                 temp = sensortag.IRtemperature.read()
                 perc = mq.MQPercentage()
                 alc = (perc["ALCOHOL"])
-                # 3 is alcohol
                 print('Time: {0} Temperature: {1}C Alcohol: {2} ppm '.format(time_now, temp, alc))
                 update_register(register_names[3], temp, context)
                 update_register(register_names[4], alc, context)
