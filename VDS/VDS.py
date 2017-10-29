@@ -11,10 +11,11 @@ PointPair = collections.namedtuple('PointPair',['distance','pointA','pointB'], v
 ColBound = collections.namedtuple('ColBound',['R','G','B'], verbose=False)
 DiscBox = collections.namedtuple('DiscBox',['x','y'], verbose=False)
 
-colBounds = {'blackLow': ColBound(0,0,0), 'blackHigh': ColBound(0,0,0),
-             'blueLow': ColBound(0,0,100), 'blueHigh': ColBound(80,200,255),
-             'redLow': ColBound(0,0,0), 'redHigh': ColBound(0,0,0),
-             'greenLow': ColBound(0,0,0), 'greenHigh': ColBound(0,0,0)}
+colBounds = {'blackLow': ColBound(0,0,0), 'blackHigh': ColBound(180,255,51),
+             'blueLow': ColBound(85,25,60), 'blueHigh': ColBound(130,255,225),
+             'redLow': ColBound(0,25,60), 'redHigh': ColBound(15,255,225),
+             'red2Low': ColBound(170,25,60), 'red2High': ColBound(180,255,225),
+             'greenLow': ColBound(40,25,60), 'greenHigh': ColBound(85,255,225)}
 TRAY_CODE = 0
 RED_CODE = 1
 BLUE_CODE = 2
@@ -91,9 +92,6 @@ def getTraySlots(img):
             y = rectPoints['topLeft'].y + j*((p12dist+p34dist)/12.0)*math.sin(angleOffset) + i*((p23dist+p41dist)/12.0)*math.sin(numpy.deg2rad(90)+angleOffset)
             img.drawPoints([(x,y)], color=SimpleCV.Color.RED,width=2)
             slots.append(DiscBox(x,y))
-            img.show()
-            time.sleep(0.3)
-
     return slots;
 
 def loadImages(): 
@@ -110,38 +108,24 @@ def loadImages():
     
     return baseline,trayImg,diff;
 
-def detectWasteType():
-    baseline,trayImg,diff = loadImages()
-    #Attempt to identify waste tray compartment coords
-    slotCoords = getTraySlots(diff)
-    compartments = []
-    # Retrieve compartment size stored as first element in list
-    cropSize = slotCoords[0]
-    # Then crop and store image area around compartment coordinates 
-    for i in range(1,len(slotCoords)):
-        compartments.append(trayImg.crop(slotCoords[i].x,slotCoords[i].y,cropSize,cropSize,True))
-
-    return formatVDSMessage(trayImg,compartments);
-
-def formatVDSMessage(trayImg, compartments):
-    result = [0,0,0,0,0,0,0,0,0]
-    # Convert image to RGB to match our colour space
-    trayImg = trayImg.toRGB()  
+def formatVDSMessage(compartments):
+    result = [0,0,0,0,0,0,0,0,0]  
     # Iterate through each compartment and identify colour
     for i in range (0,len(compartments)):
-        compartments[i].show()
-        time.sleep(0.5)
+        # Convert image to RGB to match our colour space
+        compartments[i] = compartments[i].toHSV()
         result[i] = str(identifyColour(compartments[i].meanColor()))
     result.pop(4)
     return "VISION_DATA:"+",".join(result);
 
 def identifyColour(RGBvalue):
-    print "r:%d, g:%d, b:%d" %(RGBvalue[0],RGBvalue[1],RGBvalue[2])
     
     if isColour(RGBvalue, "blue"):
             return BLUE_CODE;
     elif isColour(RGBvalue, "red"):
-            return RED_CODE;     
+            return RED_CODE;
+    elif isColour(RGBvalue, "red2"):
+            return RED_CODE; 
     elif isColour(RGBvalue, "green"):
             return GREEN_CODE;       
     elif isColour(RGBvalue, "black"):
@@ -158,5 +142,17 @@ def isColour(RGBvalue, colour):
         return True;
     return False;
     
+def detectWasteType():
+    baseline,trayImg,diff = loadImages()
+    #Attempt to identify waste tray compartment coords
+    slotCoords = getTraySlots(diff)
+    compartments = []
+    # Retrieve compartment size stored as first element in list
+    cropSize = slotCoords[0]
+    # Then crop and store image area around compartment coordinates 
+    for i in range(1,len(slotCoords)):
+        compartments.append(trayImg.crop(slotCoords[i].x,slotCoords[i].y,cropSize,cropSize,True))
+
+    return formatVDSMessage(compartments);
     
 print detectWasteType()
