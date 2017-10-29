@@ -1,0 +1,154 @@
+MODULE SERVER
+
+!////////////////
+! Author: MM
+!////////////////
+
+VAR socketdev serverSocket;
+VAR socketdev clientSocket;
+VAR socketdev clientReturnSocket;
+PERS string ipController:= "192.168.1.201"; !robot default IP
+PERS string piIp:= "192.168.1.30"; !robot default IP
+PERS num serverPort:= 5000;
+PERS num clientPort:= 8080;
+CONST robtarget homeloader:=[[404.50,-178.17,361.47],[0.00111974,-0.99664,-0.0504217,0.0645445],[-1,-1,1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+CONST robtarget homeloader10:=[[411.51,-168.16,275.07],[0.00115634,-0.996636,-0.0504437,0.0645857],[-1,-1,1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+CONST robtarget wasteTraylifted:=[[411.51,-168.16,275.07],[0.00115634,-0.996636,-0.0504437,0.0645857],[-1,-1,1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+CONST robtarget homeloader20:=[[411.29,-167.96,135.06],[0.00117571,-0.996634,-0.0504923,0.06458],[-1,-1,1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+CONST robtarget wasteTray:=[[411.29,-167.96,135.06],[0.00117417,-0.996633,-0.0504946,0.0645806],[-1,-1,1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+CONST robtarget aboveConveyor:=[[439.72,160.85,283.16],[0.0012462,-0.996619,-0.0505143,0.0647929],[0,0,2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+CONST robtarget wasteTraydrop:=[[436.40,164.87,198.98],[0.00126291,-0.996622,-0.050467,0.0647741],[0,0,2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+
+CONST robtarget disc1:=[[394.54,209.43,205.74],[0.00117305,-0.996612,-0.050504,0.0649083],[0,0,2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+CONST robtarget disc11:=[[394.54,209.43,290.15],[0.00115452,-0.996609,-0.0505421,0.0649249],[0,0,2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+CONST robtarget treat1:=[[75.01,218.78,271.24],[0.00116703,-0.996604,-0.0503811,0.0651189],[0,0,2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+CONST robtarget treat11:=[[75.01,209.90,169.11],[0.00116605,-0.996602,-0.0503953,0.0651359],[0,0,2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+
+CONST robtarget disc21:=[[439.88,209.57,288.92],[0.00116209,-0.996608,-0.0505461,0.064927],[0,0,2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+CONST robtarget disc22:=[[440.21,209.58,205.60],[0.00117536,-0.996611,-0.0505139,0.0649168],[0,0,2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+
+CONST robtarget disc31:=[[486.08,213.23,284.52],[0.00119247,-0.996608,-0.0504689,0.0649902],[0,0,2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+CONST robtarget disc32:=[[486.76,211.69,206.62],[0.00118804,-0.99661,-0.050451,0.0649767],[0,0,2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+
+CONST robtarget disc41:=[[398.54,160.69,284.52],[0.00118804,-0.99661,-0.050451,0.0649767],[0,0,2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+CONST robtarget disc42:=[[398.54,160.69,206.62],[0.00118804,-0.99661,-0.050451,0.0649767],[0,0,2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+
+CONST robtarget disc51:=[[488.17,167.03,304.25],[0.00116235,-0.99661,-0.0504316,0.0649985],[0,0,2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+CONST robtarget disc52:=[[486.03,164.28,207.30],[0.00115694,-0.996605,-0.0504642,0.0650398],[0,0,2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+
+!////////////////////////
+!//SERVER: Main procedure
+!////////////////////////
+PROC main()
+    !//Local variables
+    VAR string receivedString;   !//Received string
+    VAR string sendString;       !//Reply string
+    VAR string addString;        !//String to add to the reply.
+    VAR bool connected;          !//Client connected
+    VAR bool reconnected;        !//Drop and reconnection happened during serving a command
+	VAR string returnStr;
+    VAR bool ok;
+	VAR num command;
+	
+	VAR string clientIP;
+	
+    TPWrite "SERVER: Server waiting for incoming connections ...";
+	returnStr := "";
+	WHILE TRUE DO
+	    SocketCreate serverSocket;
+		SocketBind serverSocket, ipController, serverPort;
+		SocketListen serverSocket;
+        SocketAccept serverSocket,clientSocket \time:=WAIT_MAX;
+		SocketReceive clientSocket \Str := receivedString \Time:=WAIT_MAX;
+		ok := StrToVal(receivedString, command);
+		IF command=1 THEN
+			TPWrite "Recieving command: 1";
+
+		    TPWrite "sup";
+            
+            returnStr := "1";
+		ELSEIF command=2 THEN
+			TPWrite "Receiving command: 2";
+            MoveL disc41, v100, z50, tool0;
+            MoveL disc42, v100, z50, tool0;
+            WaitTime reg1;
+    		Set DO10_6;
+    		WaitTime reg1;
+            MoveL disc41, v100, z50, tool0;
+            MoveL treat1, v100, z50, tool0;
+            MoveL treat11, v100, z50, tool0;
+            WaitTime reg1;
+    		Reset DO10_6;
+    		WaitTime reg1;
+		    MoveL treat1, v100, z50, tool0;
+            
+            TPWrite "boop";
+			returnStr := "2";
+		ELSEIF command=3 THEN
+			TPWrite "Recieving command: 3";
+			returnStr := "3";
+		ELSEIF command=4 THEN
+			TPWrite "Recieving command: 4";
+			returnStr := "4";
+		ELSEIF command=5 THEN
+			TPWrite "Recieving command: 5";
+			returnStr := "5";
+		ELSEIF command=6 THEN
+			TPWrite "Recieving command: 6";
+			returnStr := "6";
+		ELSEIF command=7 THEN
+			TPWrite "Recieving command: 7";
+			returnStr := "7";
+		ELSEIF command=8 THEN
+			TPWrite "Recieving command: 8";
+			returnStr := "8";
+		ELSEIF command=9 THEN
+			TPWrite "Recieving command: 9";
+			returnStr := "9";
+		ELSEIF command=10 THEN
+			TPWrite "Recieving command: 10";
+			returnStr := "10";
+		ELSEIF command=11 THEN
+			TPWrite "Recieving command: 11";
+			returnStr := "11";
+		ELSEIF command=12 THEN
+			TPWrite "Recieving command: 12";
+			returnStr := "12";
+		ELSEIF command=13 THEN
+			TPWrite "Recieving command: 13";
+			returnStr := "13";
+		ELSEIF command=14 THEN
+			TPWrite "Recieving command: 14";
+			returnStr := "14";
+		ELSEIF command=15 THEN
+			TPWrite "Recieving command: 15";
+			returnStr := "15";
+		ELSEIF command=16 THEN
+			TPWrite "Recieving command: 16";
+			returnStr := "16";
+		ELSEIF command=17 THEN
+			TPWrite "Recieving command: 17";
+			returnStr := "17";
+		ELSEIF command=18 THEN
+			TPWrite "Recieving command: 18";
+			returnStr := "18";
+		ELSEIF command=19 THEN
+			TPWrite "Recieving command: 19";
+			returnStr := "19";
+		ELSEIF command=20 THEN
+			TPWrite "Recieving command: 20";
+			returnStr := "20";
+		ELSEIF command=21 THEN
+			TPWrite "Recieving command: 21";
+			returnStr := "21";
+		ENDIF
+		SocketClose clientSocket;
+        SocketCreate clientReturnSocket;
+        SocketConnect clientReturnSocket, piIp, clientPort;
+		SocketSend clientReturnSocket \Str := "ROBOT_DATA:"+returnStr;
+        WaitTime 2;
+		SocketClose clientReturnSocket;
+        SocketClose serverSocket;
+    ENDWHILE
+ENDPROC
+ENDMODULE
