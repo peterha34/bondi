@@ -1,7 +1,18 @@
+-------------------------
+Connection to IGSS info:
+TS-1 Temp = Offset: 1
+TS-2 Temp = Offset: 2
+TS-2 Acceleration = Offeset: 3
+TS-3 Temp = Offset: 4
+TS-3 Alcohol Concerntration = Offset: 5
+
+TS-1 Light = Offset: 6
+TS-1 Humidity = Offset: 7
+
+--------------------------
 // to swap from wireless to ethernet
 sudo nano /etc/network/interfaces
 --> comment out allow-hotplug eth0
-
 
 ------------------
 // check bluetooth status 
