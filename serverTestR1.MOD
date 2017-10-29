@@ -8,7 +8,7 @@ VAR socketdev serverSocket;
 VAR socketdev clientSocket;
 VAR socketdev clientReturnSocket;
 PERS string ipController:= "192.168.1.201"; !robot default IP
-PERS string piIp:= "192.168.1.30"; !robot default IP
+PERS string piIp:= "192.168.1.5"; !robot default IP
 PERS num serverPort:= 5000;
 PERS num clientPort:= 8080;
 
