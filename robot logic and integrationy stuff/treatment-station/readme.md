@@ -4,7 +4,7 @@ TI sensor tag file: cc2650sensortag.py - Authour: John Thai, Acknowledgement: Ia
 
 Gas sensor files: mq.py, MCP3008.py - Authour: tutRPi
 
-## What works/operation/how it works ##
+## Operation Ovewview ##
 * Sensors measure temperature, acceleration, alcohol, light and humidity. 
 * Automatically start taking in treatment value from sensor on boot up.
 ** System initialise to a set state when boot up.
@@ -13,9 +13,6 @@ Gas sensor files: mq.py, MCP3008.py - Authour: tutRPi
 * Treatment RTU communicates with robots PLC.
 * Treatment RTU communicates with server.
 
-## What doesn’t/defects ##
-* Each sensor monitor each other
-
 ## Hardwares ##
 * Raspberry Pi 3
 * TI Sensor Tags
@@ -23,7 +20,9 @@ Gas sensor files: mq.py, MCP3008.py - Authour: tutRPi
 
 ## Installation Guide ## 
 * Set-up MQ 3 Gas sensor according to the diagram below.
+
 ![MQ gas sensor wiring](../Raspberry-Pi-Gas-Sensor-MQ2-Steckplatine.png)
+
 * Edit device MAC Address according to the sensor MAC Address in treament.py and cc2650sensortag.py file.
 * Setup IP address for the RTU and its connection in treament.py file accordingly. View Appendix A for our IP assignment.
 * Turn on the TI sensor tags.
@@ -49,6 +48,8 @@ Run treatment station file
 ```bash
 python treatment.py
 ```
+## To be added ##
+* Each sensor monitor each other
 
 ## References ##
 [MQ-x Gas Sensor Guide](https://tutorials-raspberrypi.com/configure-and-read-out-the-raspberry-pi-gas-sensor-mq-x/)
