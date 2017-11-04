@@ -1,0 +1,25 @@
+MODULE MainModule
+	CONST robtarget homeloader:=[[404.50,-178.17,361.47],[0.00111974,-0.99664,-0.0504217,0.0645445],[-1,-1,1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+	CONST robtarget homeloader10:=[[411.51,-168.16,275.07],[0.00115634,-0.996636,-0.0504437,0.0645857],[-1,-1,1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+	CONST robtarget wasteTraylifted:=[[411.51,-168.16,275.07],[0.00115634,-0.996636,-0.0504437,0.0645857],[-1,-1,1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+	CONST robtarget homeloader20:=[[411.29,-167.96,135.06],[0.00117571,-0.996634,-0.0504923,0.06458],[-1,-1,1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+	CONST robtarget wasteTray:=[[411.29,-167.96,135.06],[0.00117417,-0.996633,-0.0504946,0.0645806],[-1,-1,1,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+	CONST robtarget aboveConveyor:=[[439.72,160.85,283.16],[0.0012462,-0.996619,-0.0505143,0.0647929],[0,0,2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+	CONST robtarget wasteTraydrop:=[[436.40,164.87,198.98],[0.00126291,-0.996622,-0.050467,0.0647741],[0,0,2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+
+	PROC main()
+		MoveL homeloader, v100, z50, tool0;
+		MoveL wasteTray, v100, z50, tool0;
+		WaitTime reg1;
+		Set DO10_6;
+		WaitTime reg1;
+		MoveL wasteTraylifted, v100, z50, tool0;
+		MoveL aboveConveyor, v100, z50, tool0;
+		MoveL wasteTraydrop, v100, z50, tool0;
+		WaitTime reg1;
+		Reset DO10_6;
+		WaitTime reg1;
+		MoveL aboveConveyor, v100, z50, tool0;
+		MoveL homeloader, v100, z50, tool0;
+	ENDPROC
+ENDMODULE

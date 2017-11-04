@@ -1,0 +1,24 @@
+MODULE MainModule
+
+CONST robtarget disc81:=[[483.03,131.46,281.90],[0.00113903,-0.9966,-0.0504776,0.0651036],[0,0,2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+CONST robtarget disc82:=[[482.92,118.25,207.45],[0.0011428,-0.996601,-0.0504692,0.0650994],[0,0,2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];	
+CONST robtarget treat1:=[[75.01,218.78,271.24],[0.00116703,-0.996604,-0.0503811,0.0651189],[0,0,2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+CONST robtarget treat11:=[[75.01,209.90,169.11],[0.00116605,-0.996602,-0.0503953,0.0651359],[0,0,2,0],[9E+09,9E+09,9E+09,9E+09,9E+09,9E+09]];
+
+	PROC main()
+            MoveL disc81, v100, z50, tool0;
+            MoveL disc82, v100, z50, tool0;
+            WaitTime reg1;
+    		Set DO10_6;
+    		WaitTime reg1;
+            MoveL disc81, v100, z50, tool0;
+            MoveL treat1, v100, z50, tool0;
+            MoveL treat11, v100, z50, tool0;
+            WaitTime reg1;
+    		Reset DO10_6;
+    		WaitTime reg1;
+		    MoveL treat1, v100, z50, tool0;
+
+	ENDPROC
+
+ENDMODULE
