@@ -23,7 +23,7 @@ Gas sensor files: mq.py, MCP3008.py - Authour: tutRPi
 
 ## Installation Guide ## 
 * Set-up MQ 3 Gas sensor according to the diagram below.
-
+![MQ gas sensor wiring](F:\University\2017 Spring\48481-ICT-Design\Assignment3\Raspberry-Pi-Gas-Sensor-MQ2-Steckplatine.png)
 * Edit device MAC Address according to the sensor MAC Address in treament.py and cc2650sensortag.py file.
 * Setup IP address for the RTU and its connection in treament.py file accordingly. View Appendix A for our IP assignment.
 * Turn on the TI sensor tags.
@@ -52,4 +52,5 @@ python treatment.py
 
 ## References ##
 [MQ-x Gas Sensor Guide](https://tutorials-raspberrypi.com/configure-and-read-out-the-raspberry-pi-gas-sensor-mq-x/)
+
 [Bluepy Library for TI Sensor Tag Guide](https://github.com/IanHarvey/bluepy)
